@@ -11,38 +11,27 @@ function go(n){document.querySelectorAll(".screen").forEach(x=>x.classList.toggl
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();go(b.dataset.go)}));
 window.addEventListener("playerstate",refresh);
 initShop({onState:refresh});initDeckBuilder();refresh();
-async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=selectglow10");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
+async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=raycast1");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){battle3d.setCardTapHandler(handleCardTap);while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
 function animate3d(method,...args){if(battle3d){battle3d[method](...args);return}if(battle3dLoading)pending3d.push([method,...args])}
 function startBattle(){ensureBattle3D();const saved=getState();const validDeck=(Array.isArray(saved.deck)?saved.deck:[]).filter(id=>cardById(id));game=createBattle(validDeck);battleStarted=true;paidWin=false;selectedUnit=null;drawBattle()}
-function handleBoardClick(e){
- let b=e.target?.closest?.("button[data-unit]");
- if(!b&&Number.isFinite(e.clientX)&&Number.isFinite(e.clientY)){
-  const under=document.elementFromPoint(e.clientX,e.clientY);
-  b=under?.closest?.("button[data-unit]")||null;
-  if(!b){
-   for(const candidate of document.querySelectorAll("#player-board button[data-unit],#enemy-board button[data-unit]")){
-    const r=candidate.getBoundingClientRect();
-    if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){b=candidate;break}
-   }
-  }
- }
- if(!b||!game||game.over)return;
- const side=b.dataset.side,index=Number(b.dataset.unit);
+function handleCardTap(side,index){
+ if(!game||game.over||!Number.isInteger(index))return;
  if(side==="player"){
   if(!game.player.board[index])return;
   selectedUnit=selectedUnit===index?null:index;
   $("#battle-message").textContent=selectedUnit===null?"Choose a duck to attack.":"Selected "+game.player.board[index].name+". Now tap a rival duck to attack.";
-  drawBattle();e.preventDefault();return;
+  drawBattle();return;
  }
- if(side==="enemy"&&selectedUnit!==null&&game.player.board[selectedUnit]){
+ if(side==="enemy"&&selectedUnit!==null&&game.player.board[selectedUnit]&&game.enemy.board[index]){
   const attacker=selectedUnit,ok=attack(game,"player",attacker,index);
   if(ok)animate3d("attack","player",attacker,index);
-  selectedUnit=null;if(ok)drawBattle();e.preventDefault();
+  selectedUnit=null;if(ok)drawBattle();
  }
 }
-// Use the native click activation synthesized by iOS Safari after touch. Do not
-// rerender on pointerup: replacing a button during pointerup can cancel its click.
-$("#battle").addEventListener("click",handleBoardClick,true);
+$("#battle").addEventListener("click",e=>{
+ const button=e.target?.closest?.("button[data-unit]");
+ if(button&&!battle3d)handleCardTap(button.dataset.side,Number(button.dataset.unit));
+});
 function drawBattle(){
  if(!game)return;
  $("#player-hp").textContent=game.player.hp+" ♥";$("#enemy-hp").textContent=game.enemy.hp+" ♥";
