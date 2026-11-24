@@ -227,7 +227,7 @@ export function mountBattleScene(host){
         const to=pawn.position.clone();to.y=.72;
         motions.push({kind:"lunge",mesh:attacker.mesh,from,to,fromTime:performance.now(),duration:reduced?100:520});
       },
-      ability(type="hook",targetIndex=0){
+      ability(type="hook",targetIndex=0,attackerIndex=0){
         const target=[...live.values()].find(a=>a.side==="enemy"&&a.index===targetIndex);
         if(!target)return;
         const origin=target.mesh.position.clone();
@@ -236,7 +236,7 @@ export function mountBattleScene(host){
           const glow=new THREE.PointLight(0x9b55ff,3.2,4);glow.position.copy(origin);glow.position.y+=.35;scene.add(glow);
           const ring=new THREE.Mesh(new THREE.TorusGeometry(.72,.045,10,48),new THREE.MeshBasicMaterial({color:0xc18aff,transparent:true,opacity:.95}));
           ring.rotation.x=Math.PI/2;ring.position.copy(origin);ring.position.y=.22;scene.add(ring);
-          motions.push({kind:"telekinesis",ghost,glow,ring,from:origin,to:new THREE.Vector3(origin.x,2.7,-7.8),fromTime:performance.now(),duration:reduced?1:1050});
+          motions.push({kind:"telekinesis",ghost,glow,ring,from:origin.clone(),riseTo:origin.clone().add(new THREE.Vector3(0,1.15,0)),to:new THREE.Vector3(origin.x,2.7,-7.8),fromTime:performance.now(),duration:reduced?1:1450});
         }else if(type==="death-note"){
           const pen=new THREE.Group();
           const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.055,.07,.95,12),new THREE.MeshStandardMaterial({color:0x17131f,metalness:.45,roughness:.25}));
@@ -246,7 +246,12 @@ export function mountBattleScene(host){
           pen.position.set(origin.x+.35,2.4,origin.z-.12);scene.add(pen);
           const smoke=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10),new THREE.MeshBasicMaterial({color:0xaaa6b6,transparent:true,opacity:.8}));
           smoke.position.copy(origin);smoke.position.y=.25;scene.add(smoke);
-          motions.push({kind:"deathnote",pen,smoke,from:new THREE.Vector3(origin.x+.35,2.4,origin.z-.12),to:new THREE.Vector3(origin.x-.25,.35,origin.z),fromTime:performance.now(),duration:reduced?1:1050});
+          const scribblePoints=[];for(let i=0;i<34;i++){const t=i/33;scribblePoints.push(new THREE.Vector3(origin.x-.42+t*.84,.19,origin.z-.38+Math.sin(t*19)*(.035+Math.sin(t*7)*.018)))}
+          const scribble=new THREE.Line(new THREE.BufferGeometry().setFromPoints(scribblePoints),new THREE.LineBasicMaterial({color:0xe9e2f5,transparent:true,opacity:0,linewidth:2,depthTest:false}));scribble.renderOrder=20;scene.add(scribble);
+          const crackGroup=new THREE.Group();crackGroup.position.set(origin.x,.205,origin.z);const crackMat=new THREE.LineBasicMaterial({color:0x211b2b,transparent:true,opacity:0,depthTest:false});
+          const crackPaths=[[[0,0,0],[-.18,0,-.13],[-.29,0,-.1]],[[-.18,0,-.13],[-.23,0,-.28]],[[0,0,0],[.16,0,.12],[.29,0,.08]],[[.16,0,.12],[.22,0,.27]],[[0,0,0],[.02,0,.22]]];
+          crackPaths.forEach(path=>{const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(path.map(v=>new THREE.Vector3(...v))),crackMat);crackGroup.add(line)});scene.add(crackGroup);
+          motions.push({kind:"deathnote",pen,smoke,scribble,crackGroup,crackMat,from:new THREE.Vector3(origin.x+.35,2.4,origin.z-.12),to:new THREE.Vector3(origin.x-.25,.34,origin.z),fromTime:performance.now(),duration:reduced?1:1450});
         }else if(type==="slash"){
           for(let i=0;i<3;i++){
             const slash=new THREE.Mesh(new THREE.TorusGeometry(.48+i*.18,.035,8,48,Math.PI*1.38),new THREE.MeshBasicMaterial({color:i%2?0xff263f:0xff6b76,transparent:true,opacity:.98}));
@@ -254,9 +259,13 @@ export function mountBattleScene(host){
             motions.push({kind:"slash",slash,fromTime:performance.now()+i*65,duration:reduced?1:600});
           }
         }else if(type==="hook"){
-          const hook=new THREE.Mesh(new THREE.TorusGeometry(.22,.045,8,24,Math.PI*1.5),new THREE.MeshStandardMaterial({color:0xd7dbe3,metalness:.85,roughness:.2,emissive:0x344455,emissiveIntensity:.5}));
-          hook.position.set(origin.x-.8,.6,origin.z);hook.rotation.set(Math.PI/2,0,-.5);scene.add(hook);
-          motions.push({kind:"hook",hook,fromTime:performance.now(),duration:reduced?1:500});
+          const attacker=[...live.values()].find(a=>a.side==="player"&&a.index===attackerIndex);if(!attacker)return;
+          const from=attacker.mesh.position.clone(),to=origin.clone().add(new THREE.Vector3(0,.12,.62));
+          const arm=new THREE.Group();const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.48,12),new THREE.MeshStandardMaterial({color:0x1a5960,roughness:.55}));sleeve.rotation.z=Math.PI/2;arm.add(sleeve);
+          const fist=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),new THREE.MeshStandardMaterial({color:0xf0d5b0,roughness:.8}));fist.position.x=.27;arm.add(fist);
+          const hookHand=new THREE.Mesh(new THREE.TorusGeometry(.15,.045,8,24,Math.PI*1.5),new THREE.MeshStandardMaterial({color:0xd7dbe3,metalness:.85,roughness:.2,emissive:0x344455,emissiveIntensity:.5}));hookHand.position.set(.39,-.04,0);hookHand.rotation.set(0,0,-.6);arm.add(hookHand);scene.add(arm);
+          const impact=new THREE.Mesh(new THREE.TorusGeometry(.38,.045,8,40),new THREE.MeshBasicMaterial({color:0xffd45f,transparent:true,opacity:0,depthTest:false}));impact.rotation.x=Math.PI/2;impact.position.copy(origin);impact.position.y=.2;scene.add(impact);
+          motions.push({kind:"foxy",attacker:attacker.mesh,arm,impact,from,to,fromTime:performance.now(),duration:reduced?1:1050});
         }
       },
       attack(side="player",index=0,targetIndex=0){
@@ -296,15 +305,29 @@ export function mountBattleScene(host){
           a.mesh.rotation.z=(a.side==="enemy"?-.12:.12)*(1-ease);
           if(p>=1){a.mesh.position.set(a.targetX,.11,a.targetZ);a.mesh.rotation.set(0,a.side==="enemy"?Math.PI:0,0);a.kind="rest";motions.splice(i,1)}
         }else if(a.kind==="telekinesis"){
-          a.ghost.position.lerpVectors(a.from,a.to,ease);a.ghost.rotation.y+=.12;
-          a.glow.position.copy(a.ghost.position);a.glow.intensity=2.8*(1-p);
-          a.ring.position.copy(a.ghost.position);a.ring.scale.setScalar(1+p*1.8);
-          a.ring.material.opacity=1-p;
-          if(p>=1){scene.remove(a.ghost,a.glow,a.ring);a.ghost.geometry.dispose();a.ghost.material.forEach(m=>m.dispose());a.ring.geometry.dispose();a.ring.material.dispose();scene.remove(a.glow);motions.splice(i,1)}
+          const rise=Math.min(1,p/.34),launch=Math.max(0,(p-.34)/.66),riseEase=rise*rise*(3-2*rise),launchEase=1-Math.pow(1-launch,2.2);
+          a.ghost.position.lerpVectors(a.from,a.riseTo,riseEase);if(launch>0)a.ghost.position.lerpVectors(a.riseTo,a.to,launchEase);
+          a.ghost.rotation.y+=.075+launch*.12;a.ghost.rotation.z=Math.sin(p*13)*.045;
+          a.glow.position.copy(a.ghost.position);a.glow.intensity=2.8*(1-p*.72);
+          a.ring.position.copy(a.ghost.position);a.ring.scale.setScalar(1+p*1.8);a.ring.material.opacity=1-p*.8;
+          if(p>=1){scene.remove(a.ghost,a.glow,a.ring);a.ghost.geometry.dispose();a.ghost.material.forEach(m=>m.dispose());a.ring.geometry.dispose();a.ring.material.dispose();motions.splice(i,1)}
         }else if(a.kind==="deathnote"){
+          const write=Math.max(0,Math.min(1,(p-.18)/.52)),fade=Math.max(0,Math.min(1,(p-.72)/.28));
           a.pen.position.lerpVectors(a.from,a.to,ease);a.pen.rotation.y=Math.sin(p*34)*.32;a.pen.rotation.z=-.18+Math.sin(p*48)*.12;
-          a.smoke.scale.setScalar(.2+p*2.8);a.smoke.material.opacity=(1-p)*.75;
-          if(p>=1){scene.remove(a.pen,a.smoke);a.pen.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}});a.smoke.geometry.dispose();a.smoke.material.dispose();motions.splice(i,1)}
+          a.smoke.scale.setScalar(.2+p*2.8);a.smoke.material.opacity=(1-p)*.45;
+          a.scribble.material.opacity=write*(1-fade);a.crackMat.opacity=Math.max(0,Math.min(1,(p-.36)/.12))*(1-fade);
+          a.crackGroup.scale.setScalar(.55+Math.min(1,p*3)*.45);
+          if(p>=1){scene.remove(a.pen,a.smoke,a.scribble,a.crackGroup);a.pen.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}});a.smoke.geometry.dispose();a.smoke.material.dispose();a.scribble.geometry.dispose();a.scribble.material.dispose();a.crackGroup.traverse(o=>{if(o.isLine){o.geometry.dispose()}});a.crackMat.dispose();motions.splice(i,1)}
+        }else if(a.kind==="foxy"){
+          const dashIn=Math.min(1,p/.36),slam=Math.max(0,Math.min(1,(p-.36)/.18)),dashOut=Math.max(0,(p-.54)/.46);
+          const inEase=1-Math.pow(1-dashIn,3),outEase=dashOut*dashOut*(3-2*dashOut);
+          a.attacker.position.lerpVectors(a.from,a.to,inEase);
+          if(p>.54)a.attacker.position.lerpVectors(a.to,a.from,outEase);
+          a.attacker.position.y=.11+Math.sin(Math.min(1,p/.54)*Math.PI)*.48-(slam*.16);
+          a.attacker.rotation.z=Math.sin(p*Math.PI)*-.12;
+          a.arm.position.copy(a.to);a.arm.position.x+=.28;a.arm.position.y=.62-slam*.42;a.arm.rotation.z=-.45+slam*.95;
+          a.impact.material.opacity=slam*(1-slam)*2.2;a.impact.scale.setScalar(.7+slam*1.8);
+          if(p>=1){a.attacker.position.copy(a.from);a.attacker.position.y=.11;a.attacker.rotation.z=0;scene.remove(a.arm,a.impact);a.arm.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}});a.impact.geometry.dispose();a.impact.material.dispose();motions.splice(i,1)}
         }else if(a.kind==="slash"){
           if(now<a.fromTime)continue;
           a.slash.rotation.z+=.22;a.slash.scale.setScalar(1+p*.7);a.slash.material.opacity=1-p;
