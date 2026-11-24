@@ -82,24 +82,34 @@ export function mountBattleScene(host){
     };
     const playerPawn=createPawn("player");
     const enemyPawn=createPawn("enemy");
-    // Red target marker and invisible touch-sized hit area above the rival pawn.
+    // Pawn-centered red crosshair reticle and generous invisible touch target.
+    // The reticle faces the camera so its dot and crosshair stay crisp on mobile.
     const pawnTarget=new THREE.Group();
-    pawnTarget.position.set(0,1.22,enemyPawn.position.z);
-    const targetDot=new THREE.Mesh(
-      new THREE.CircleGeometry(.145,32),
-      new THREE.MeshBasicMaterial({color:0xff3030,side:THREE.DoubleSide})
-    );
-    targetDot.rotation.x=-Math.PI/2;targetDot.position.y=.02;pawnTarget.add(targetDot);
+    pawnTarget.position.set(0,.62,enemyPawn.position.z);
+    const targetMaterial=new THREE.MeshBasicMaterial({color:0xff3030,depthTest:false,transparent:true});
+    const targetDot=new THREE.Mesh(new THREE.SphereGeometry(.085,20,16),targetMaterial);
+    targetDot.position.z=.035;targetDot.renderOrder=12;pawnTarget.add(targetDot);
     const targetRing=new THREE.Mesh(
-      new THREE.TorusGeometry(.205,.035,10,36),
-      new THREE.MeshBasicMaterial({color:0xff6262})
+      new THREE.TorusGeometry(.29,.022,8,40),
+      new THREE.MeshBasicMaterial({color:0xff3030,depthTest:false})
     );
-    targetRing.rotation.x=Math.PI/2;targetRing.position.y=.025;pawnTarget.add(targetRing);
+    targetRing.renderOrder=11;pawnTarget.add(targetRing);
+    const addCrosshairBar=(x,y,w,h)=>{
+      const bar=new THREE.Mesh(
+        new THREE.BoxGeometry(w,h,.018),
+        new THREE.MeshBasicMaterial({color:0xff3030,depthTest:false})
+      );
+      bar.position.set(x,y,.018);bar.renderOrder=11;pawnTarget.add(bar);
+    };
+    addCrosshairBar(0,.405,.105,.025);
+    addCrosshairBar(0,-.405,.105,.025);
+    addCrosshairBar(-.405,0,.025,.105);
+    addCrosshairBar(.405,0,.025,.105);
     const targetHit=new THREE.Mesh(
-      new THREE.SphereGeometry(.34,16,12),
+      new THREE.SphereGeometry(.48,20,16),
       new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false})
     );
-    targetHit.position.y=.02;targetHit.userData.duckPawnTarget=true;pawnTarget.add(targetHit);
+    targetHit.userData.duckPawnTarget=true;pawnTarget.add(targetHit);
     pawnTarget.visible=false;scene.add(pawnTarget);
 
     // Raised center rail separates the rival mats without obstructing card slots.
@@ -263,7 +273,7 @@ export function mountBattleScene(host){
           a.mesh.position.y=.11+a.lift+bob;
         }
       }
-      renderer.render(scene,camera);raf=requestAnimationFrame(render);
+      if(pawnTarget.visible)pawnTarget.quaternion.copy(camera.quaternion);\n      renderer.render(scene,camera);raf=requestAnimationFrame(render);
     };
     raf=requestAnimationFrame(render);
     host.addEventListener("duck3d-dispose",()=>{alive=false;cancelAnimationFrame(raf);observer?.disconnect();for(const unit of [...live.keys()])removeUnit(unit);renderer.domElement.removeEventListener("pointerdown",onCardPointerDown);renderer.dispose();renderer.domElement.remove()},{once:true});
