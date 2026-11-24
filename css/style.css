@@ -57,3 +57,49 @@ html,body{width:100%;height:100%;min-height:100%;overflow:hidden}
 #battle .arena{min-height:330px}
 #battle .board{display:grid;grid-template-columns:repeat(3,65px);grid-auto-rows:52px;justify-content:center;align-content:center;gap:4px;min-height:108px;flex:none}
 #battle .unit{width:65px;height:52px;min-height:0}
+
+/* Full-screen battle presentation: mat owns the play space, hand gets a compact dock. */
+body:has(#battle.active) #app{padding:0}
+body:has(#battle.active)>.top,
+body:has(#battle.active) #app>.top,
+body:has(#battle.active) #app>.bottom-nav{display:none!important}
+body:has(#battle.active) #view{position:fixed;inset:0;width:100%;height:100dvh;overflow:hidden;z-index:2}
+#battle.active{display:block;position:relative;width:100%;max-width:none;height:100dvh;min-height:0;margin:0;padding:0;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#282d50 0%,#17152c 72%)}
+#battle .battle-hud{position:absolute;z-index:10;top:calc(8px + env(safe-area-inset-top));left:12px;right:12px;margin:0;padding:0;background:none;pointer-events:none;align-items:flex-start}
+#battle .battle-hud>div{min-width:94px;padding:8px 11px;border-radius:13px;background:#17152cbb;border:1px solid #ffffff24;backdrop-filter:blur(8px);gap:2px}
+#battle .battle-hud .hud-player{align-items:flex-start}
+#battle .battle-hud .hud-rival{align-items:flex-end;text-align:right}
+#battle .battle-hud small{font-size:9px}
+#battle .battle-hud b:not(.hud-vs){font-size:20px}
+#battle .battle-hud span{font-size:10px}
+#battle .battle-hud .hud-vs{font-size:12px;color:#ffffff99;padding-top:15px}
+#battle .arena{position:absolute;inset:66px 8px 174px;border-radius:22px;border-width:3px;min-height:0;max-height:none;padding:12px 8px;display:grid;grid-template-rows:18px minmax(0,1fr) 30px minmax(0,1fr) 18px;gap:3px;overflow:hidden}
+#battle .arena-label{font-size:9px;display:flex;align-items:center;justify-content:center;letter-spacing:.18em;color:#d5fff7aa}
+#battle .board{min-height:0;height:100%;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));align-items:center;justify-items:center;gap:4px;padding:2px 0}
+#battle .unit{width:min(100%,clamp(43px,17vw,78px));height:100%;max-height:105px;min-height:0}
+#battle .table-center{height:auto;min-height:0;border:1px solid #ffffff24;border-radius:10px;background:#102c36aa;backdrop-filter:blur(4px);font-size:10px;padding:4px 8px;gap:6px;overflow:hidden}
+#battle .table-center b{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#battle .battle-inventory{position:absolute;z-index:12;left:9px;right:9px;bottom:calc(8px + env(safe-area-inset-bottom));padding:8px 10px 10px;border-radius:18px;background:#17152cef;border:1px solid #ffffff24;box-shadow:0 8px 28px #0007;backdrop-filter:blur(12px)}
+#battle .hand-title{margin:0 2px 5px;font-size:9px}
+#battle .hand{min-height:0;height:clamp(94px,17vh,142px);max-height:none;justify-content:flex-start;align-items:flex-start;gap:7px;padding:2px 2px 5px;overscroll-behavior-x:contain}
+#battle .hand-card{width:clamp(58px,16vw,88px);min-width:clamp(58px,16vw,88px);min-height:0}
+#battle .hand-card img{width:100%;height:auto;aspect-ratio:896/1200;object-fit:cover}
+#battle .hand-card b{font-size:9px;line-height:1.1}
+#battle .hand-card small{font-size:9px}
+#battle .battle-actions{padding:5px 0 0;gap:8px}
+#battle .battle-actions .big{min-height:38px;padding:9px 12px;font-size:11px}
+#battle .battle-actions .secondary{font-size:10px}
+@media(min-width:700px){
+ #battle .arena{inset:76px 8vw 188px;max-width:1100px;margin:auto}
+ #battle .battle-inventory{left:50%;right:auto;transform:translateX(-50%);width:min(760px,calc(100% - 40px));bottom:14px}
+ #battle .hand{justify-content:center;height:120px}
+ #battle .hand-card{width:82px;min-width:82px}
+ #battle .battle-hud{left:24px;right:24px}
+}
+@media(max-height:620px){
+ #battle .arena{inset:58px 8px 142px}
+ #battle .battle-inventory{padding:5px 8px 7px}
+ #battle .hand{height:78px}
+ #battle .battle-actions{padding-top:3px}
+ #battle .battle-actions .big{min-height:32px}
+}
