@@ -82,6 +82,26 @@ export function mountBattleScene(host){
     };
     const playerPawn=createPawn("player");
     const enemyPawn=createPawn("enemy");
+    // Red target marker and invisible touch-sized hit area above the rival pawn.
+    const pawnTarget=new THREE.Group();
+    pawnTarget.position.set(0,1.22,enemyPawn.position.z);
+    const targetDot=new THREE.Mesh(
+      new THREE.CircleGeometry(.145,32),
+      new THREE.MeshBasicMaterial({color:0xff3030,side:THREE.DoubleSide})
+    );
+    targetDot.rotation.x=-Math.PI/2;targetDot.position.y=.02;pawnTarget.add(targetDot);
+    const targetRing=new THREE.Mesh(
+      new THREE.TorusGeometry(.205,.035,10,36),
+      new THREE.MeshBasicMaterial({color:0xff6262})
+    );
+    targetRing.rotation.x=Math.PI/2;targetRing.position.y=.025;pawnTarget.add(targetRing);
+    const targetHit=new THREE.Mesh(
+      new THREE.SphereGeometry(.34,16,12),
+      new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false})
+    );
+    targetHit.position.y=.02;targetHit.userData.duckPawnTarget=true;pawnTarget.add(targetHit);
+    pawnTarget.visible=false;scene.add(pawnTarget);
+
     // Raised center rail separates the rival mats without obstructing card slots.
     const divider=new THREE.Group();
     divider.position.set(0,.045,0);
@@ -183,6 +203,7 @@ export function mountBattleScene(host){
       selectUnit(index=null){
         for(const a of live.values())a.selected=a.side==="player"&&a.index===index;
       },
+      setPawnTargetable(enabled=false){pawnTarget.visible=!!enabled;},
       setCardTapHandler(handler){onCardTap=typeof handler==="function"?handler:()=>{};},
       attackDirect(side="player",index=0){
         const attacker=[...live.values()].find(a=>a.side===side&&a.index===index);
@@ -207,6 +228,8 @@ export function mountBattleScene(host){
       if(!rect.width||!rect.height)return;
       pointer.set(((e.clientX-rect.left)/rect.width)*2-1,-((e.clientY-rect.top)/rect.height)*2+1);
       raycaster.setFromCamera(pointer,camera);
+      const targets=pawnTarget.visible?raycaster.intersectObjects([targetHit],false):[];
+      if(targets.length){e.preventDefault();onCardTap("enemy-pawn",0);return}
       const hits=raycaster.intersectObjects([...live.values()].map(a=>a.mesh),false);
       const card=hits[0]?.object?.userData?.duckCard;
       if(!card)return;
