@@ -1,6 +1,6 @@
 export const CARDS=[
-{id:"library-mage",name:"Arcane Quacker",set:"Classic Bath",rarity:"Ultra Rare",cost:3,attack:3,health:4,ability:"On Play: draw a card.",front:"./assets/cards/library-mage.jpg"},
-{id:"nightmare-duck",name:"The Dread Quacker",set:"Pirate Cove",rarity:"Secret Rare",cost:4,attack:5,health:3,ability:"On Attack: deal 1 extra damage.",front:"./assets/cards/nightmare-duck.jpg"},
+{id:"library-mage",name:"Arcane Quacker",set:"Classic Bath",rarity:"Ultra Rare",cost:3,attack:3,health:4,ability:"On Play: draw a card.",front:"./IMG_1429.jpeg"},
+{id:"nightmare-duck",name:"The Dread Quacker",set:"Pirate Cove",rarity:"Secret Rare",cost:4,attack:5,health:3,ability:"On Attack: deal 1 extra damage.",front:"./IMG_1430.jpeg"},
 {id:"bubble-buddy",name:"Bubble Buddy",set:"Classic Bath",rarity:"Common",cost:1,attack:1,health:3,ability:"A loyal little blocker.",emoji:"🫧"},
 {id:"squeaky-scout",name:"Squeaky Scout",set:"Classic Bath",rarity:"Common",cost:1,attack:2,health:2,ability:"Quick on its feet.",emoji:"🐤"},
 {id:"rubber-royal",name:"Rubber Royal",set:"Classic Bath",rarity:"Rare",cost:3,attack:2,health:5,ability:"Classic Bath ducks gain +1 Health.",emoji:"👑"},
