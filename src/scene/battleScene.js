@@ -52,7 +52,7 @@ export function mountBattleScene(host){
     const createPawn=(side)=>{
       const isPlayer=side==="player";
       const pawn=new THREE.Group();
-      pawn.position.set(0,.005,isPlayer?4.04:-4.04);
+      pawn.position.set(0,.005,isPlayer?4.78:-4.78);
       const metal=new THREE.MeshStandardMaterial({
         color:isPlayer?0xe5bd69:0xb8a9e8,
         metalness:.78,roughness:.24,
@@ -134,7 +134,7 @@ export function mountBattleScene(host){
       ctx.font="bold 30px sans-serif";ctx.fillText("⚔ "+(card?.attack||1)+"    ♥ "+(card?.health||1),256,630);
       const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;return tex;
     };
-    const positionFor=(side,index)=>({x:((index%3)-1)*1.42,z:(side==="player"?1:-1)*(1.2+Math.floor(index/3)*1.55)});
+    const positionFor=(side,index)=>({x:((index%3)-1)*1.42,z:(side==="player"?1:-1)*(1.65+Math.floor(index/3)*1.7)});
     const slotGeometry=new THREE.PlaneGeometry(1.28,1.68);
     const slotFill=new THREE.MeshBasicMaterial({color:0xb8fff4,transparent:true,opacity:.075,depthWrite:false,side:THREE.DoubleSide});
     const slotLine=new THREE.LineBasicMaterial({color:0xc8fff8,transparent:true,opacity:.24,depthWrite:false});
