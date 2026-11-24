@@ -1,10 +1,10 @@
 import{getState,spend,win}from"./state/playerState.js";
 import{initShop}from"./ui/shopUI.js";
 import{initDeckBuilder,renderCollection}from"./ui/deckBuilder.js";
-import{createBattle,playCard,attack,endTurn,cardById}from"./game/battleEngine.js";
+import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js";
 window.duckSpend=spend;
 const $=s=>document.querySelector(s);
-let game=null,battleStarted=false,paidWin=false,selectedUnit=null,battle3d=null,battle3dLoading=false;const pending3d=[];
+let game=null,battleStarted=false,paidWin=false,selectedUnit=null,abilityTargeting=false,battle3d=null,battle3dLoading=false;const pending3d=[];
 function refresh(){const s=getState();$("#soap").textContent=s.soap;$("#owned-count").textContent=Object.values(s.collection).reduce((a,b)=>a+b,0);$("#win-count").textContent=s.wins;$("#pack-count").textContent=s.packs;renderCollection(document.querySelector(".filter.active")?.dataset.filter||"all")}
 function showBattleError(err){const el=$("#battle-message");if(el)el.textContent="Battle couldn't start: "+(err?.message||String(err));console.error("Duck Fight battle error",err)}
 function go(n){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===n));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.go===n));const view=$("#view");view.scrollTop=0;if(n==="battle"&&!battleStarted){try{startBattle()}catch(err){battleStarted=false;showBattleError(err)}}}
@@ -13,7 +13,7 @@ window.addEventListener("playerstate",refresh);
 initShop({onState:refresh});initDeckBuilder();refresh();
 async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=cardart2");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){battle3d.setCardTapHandler(handleCardTap);while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
 function animate3d(method,...args){if(battle3d){battle3d[method](...args);return}if(battle3dLoading)pending3d.push([method,...args])}
-function startBattle(){ensureBattle3D();const saved=getState();const validDeck=(Array.isArray(saved.deck)?saved.deck:[]).filter(id=>cardById(id));game=createBattle(validDeck);battleStarted=true;paidWin=false;selectedUnit=null;drawBattle()}
+function startBattle(){ensureBattle3D();const saved=getState();const validDeck=(Array.isArray(saved.deck)?saved.deck:[]).filter(id=>cardById(id));game=createBattle(validDeck);battleStarted=true;paidWin=false;selectedUnit=null;abilityTargeting=false;drawBattle()}
 function handleCardTap(side,index){
  if(!game||game.over||!Number.isInteger(index))return;
  if(side==="player"){
@@ -26,7 +26,7 @@ function handleCardTap(side,index){
   if(selectedUnit===null||!game.player.board[selectedUnit]){$("#battle-message").textContent="Select one of your ducks first, then target the rival pawn.";return}
   const attacker=selectedUnit,ok=attack(game,"player",attacker);
   if(ok)animate3d("attackDirect","player",attacker);
-  selectedUnit=null;if(ok)drawBattle();return;
+  selectedUnit=null;abilityTargeting=false;if(ok)drawBattle();return;
  }
  if(side==="enemy"&&selectedUnit!==null&&game.player.board[selectedUnit]&&game.enemy.board[index]){
   const attacker=selectedUnit,ok=attack(game,"player",attacker,index);
@@ -44,13 +44,13 @@ function drawBattle(){
  $("#player-bubbles").textContent="🫧 "+game.player.b+" / "+game.player.maxB;$("#enemy-bubbles").textContent="🫧 "+game.enemy.b+" / "+game.enemy.maxB;
  $("#turn-label").textContent="TURN "+game.turn;$("#battle-message").textContent=game.log||"Your turn. Play a duck!";
  for(const side of ["player","enemy"]){const target=$(side==="player"?"#player-board":"#enemy-board");target.innerHTML=game[side].board.map((u,i)=>'<button type="button" class="unit '+(side==="enemy"?"enemy":"")+'" data-side="'+side+'" data-unit="'+i+'"><b>'+u.name+'</b><span>⚔ '+u.attack+' · ♥ '+u.hp+'</span></button>').join("")}
- animate3d("syncBoard",game.player.board,game.enemy.board);animate3d("selectUnit",selectedUnit);animate3d("setPawnTargetable",game.turn>=2&&!game.over&&game.enemy.board.length===0&&game.player.board.some(u=>!u.attacked));
+ animate3d("syncBoard",game.player.board,game.enemy.board);animate3d("selectUnit",selectedUnit);animate3d("setPawnTargetable",game.turn>=2&&!game.over&&game.enemy.board.length===0&&game.player.board.some(u=>!u.attacked));\n const abilityButton=$("#ability-button"),abilityPanel=$("#ability-panel"),chosen=selectedUnit===null?null:game.player.board[selectedUnit];\n abilityPanel.classList.toggle("hidden",!chosen||!chosen.abilityKey);\n if(chosen?.abilityKey){const ready=canUseAbility(game,"player",selectedUnit);abilityButton.disabled=!ready||abilityTargeting;abilityButton.textContent=abilityTargeting?"TAP AN ENEMY DUCK…":ready?"USE "+chosen.abilityKey.replaceAll("-"," ").toUpperCase():"ABILITY RECHARGING";abilityButton.classList.toggle("targeting",abilityTargeting)}
  $("#player-board").querySelectorAll("[data-unit]").forEach(b=>{b.setAttribute("aria-label","Select "+game.player.board[Number(b.dataset.unit)].name+" to attack");b.setAttribute("aria-pressed",String(selectedUnit===Number(b.dataset.unit)))});
  $("#enemy-board").querySelectorAll("[data-unit]").forEach(b=>{b.setAttribute("aria-label",selectedUnit===null?"Enemy duck":"Attack "+game.enemy.board[Number(b.dataset.unit)].name);});
  const hand=$("#hand");hand.innerHTML=game.player.hand.map((id,i)=>{const c=cardById(id);return '<button type="button" class="hand-card" data-hand="'+i+'" '+(!c||game.player.b<c.cost||game.player.board.length>=6||game.over?"disabled":"")+'><img src="'+(c?.front||"./assets/cards/card-back.jpg")+'" alt=""><b>'+(c?.name||"Unknown duck")+'</b><small>'+(c?.cost??"?")+' 🫧 · '+(c?.attack??"?")+'/'+(c?.health??"?")+'</small></button>'}).join("");
  hand.querySelectorAll("[data-hand]").forEach(b=>b.addEventListener("click",()=>{const card=cardById(game.player.hand[Number(b.dataset.hand)]);if(playCard(game,"player",Number(b.dataset.hand))){selectedUnit=null;drawBattle()}}));
- if(game.over){$("#end-turn").textContent="MATCH OVER";$("#end-turn").disabled=true;if(game.enemy.hp<=0&&!paidWin){paidWin=true;win();refresh()}}else{$("#end-turn").textContent="END TURN →";$("#end-turn").disabled=false}
+ if(game.over){abilityPanel.classList.add("hidden");$("#end-turn").textContent="MATCH OVER";$("#end-turn").disabled=true;if(game.enemy.hp<=0&&!paidWin){paidWin=true;win();refresh()}}else{$("#end-turn").textContent="END TURN →";$("#end-turn").disabled=false}
 }
-function restartBattle(){battleStarted=false;startBattle();$("#end-turn").disabled=false}
+$("#ability-button").addEventListener("click",()=>{if(selectedUnit===null||!canUseAbility(game,"player",selectedUnit))return;abilityTargeting=true;$("#battle-message").textContent="Choose an enemy duck to target with this ability.";drawBattle();abilityTargeting=true;$("#ability-button").disabled=true;$("#ability-button").textContent="TAP AN ENEMY DUCK…";$("#ability-button").classList.add("targeting")});\nfunction restartBattle(){battleStarted=false;startBattle();$("#end-turn").disabled=false}
 $("#new-match").addEventListener("click",()=>{try{restartBattle()}catch(err){showBattleError(err)}});
-$("#end-turn").addEventListener("click",()=>{try{if(!game||game.over)return;selectedUnit=null;endTurn(game);drawBattle()}catch(err){showBattleError(err)}});
+$("#end-turn").addEventListener("click",()=>{try{if(!game||game.over)return;selectedUnit=null;abilityTargeting=false;endTurn(game);drawBattle()}catch(err){showBattleError(err)}});
