@@ -59,11 +59,15 @@ export function mountBattleScene(host){
       const edge=new THREE.MeshStandardMaterial({color:side==="enemy"?0x6a315d:0x146c75,roughness:.4,metalness:.2});
       const face=new THREE.MeshStandardMaterial({map:tex,roughness:.48,metalness:.04});
       const mesh=new THREE.Mesh(new THREE.BoxGeometry(cardW,.075,cardL),[edge,edge,face,edge,edge,edge]);
+      const selectGlow=new THREE.Mesh(new THREE.PlaneGeometry(cardW+0.22,cardL+0.22),new THREE.MeshBasicMaterial({color:0x4ffff0,transparent:true,opacity:.48,side:THREE.DoubleSide,depthWrite:false}));
+      selectGlow.rotation.x=-Math.PI/2;selectGlow.position.y=.055;selectGlow.visible=false;mesh.add(selectGlow);
+      const selectFrame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(cardW+0.2,cardL+0.2)),new THREE.LineBasicMaterial({color:0xbaffff,transparent:true,opacity:1}));
+      selectFrame.rotation.x=-Math.PI/2;selectFrame.position.y=.065;selectFrame.visible=false;mesh.add(selectFrame);
       const pos=positionFor(side,index);
       mesh.position.set(pos.x,1.05,side==="player"?3.7:-3.7);
       mesh.rotation.set(Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
       scene.add(mesh);
-      const record={mesh,tex,side,index,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
+      const record={mesh,tex,side,index,selectGlow,selectFrame,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
       live.set(unit,record);
       motions.push(record);
     };
@@ -83,7 +87,11 @@ export function mountBattleScene(host){
         }
       },
       selectUnit(index=null){
-        for(const [unit,a] of live){const edge=a.mesh.material[0];edge.emissive.setHex(a.side==="player"&&a.index===index?0x2ccfc7:0x000000);edge.emissiveIntensity=a.side==="player"&&a.index===index?1.15:0;}
+        for(const a of live.values()){
+          const selected=a.side==="player"&&a.index===index;
+          const edge=a.mesh.material[0];edge.emissive.setHex(selected?0x2ccfc7:0x000000);edge.emissiveIntensity=selected?1.6:0;
+          a.selectGlow.visible=selected;a.selectFrame.visible=selected;
+        }
       },
       attack(side="player",index=0,targetIndex=0){
         const board=[...live.entries()].filter(([,a])=>a.side===side).sort((x,y)=>x[1].index-y[1].index);
