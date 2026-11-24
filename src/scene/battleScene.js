@@ -261,9 +261,17 @@ export function mountBattleScene(host){
         }else if(type==="hook"){
           const attacker=[...live.values()].find(a=>a.side==="player"&&a.index===attackerIndex);if(!attacker)return;
           const from=attacker.mesh.position.clone(),to=origin.clone().add(new THREE.Vector3(0,.12,.62));
-          const arm=new THREE.Group();const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.48,12),new THREE.MeshStandardMaterial({color:0x1a5960,roughness:.55}));sleeve.rotation.z=Math.PI/2;arm.add(sleeve);
-          const fist=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),new THREE.MeshStandardMaterial({color:0xf0d5b0,roughness:.8}));fist.position.x=.27;arm.add(fist);
-          const hookHand=new THREE.Mesh(new THREE.TorusGeometry(.15,.045,8,24,Math.PI*1.5),new THREE.MeshStandardMaterial({color:0xd7dbe3,metalness:.85,roughness:.2,emissive:0x344455,emissiveIntensity:.5}));hookHand.position.set(.39,-.04,0);hookHand.rotation.set(0,0,-.6);arm.add(hookHand);scene.add(arm);
+          // The red forearm pivots above the target; the silver hook is its leading tip.
+          const arm=new THREE.Group();
+          const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.115,.15,.48,12),new THREE.MeshStandardMaterial({color:0xd92732,roughness:.52}));
+          sleeve.rotation.z=Math.PI/2;sleeve.position.x=.22;arm.add(sleeve);
+          const fist=new THREE.Mesh(new THREE.SphereGeometry(.145,16,12),new THREE.MeshStandardMaterial({color:0xc91f2b,roughness:.72}));
+          fist.position.set(.43,0,0);arm.add(fist);
+          const hookHand=new THREE.Group();hookHand.position.set(.49,-.015,0);
+          const hookMetal=new THREE.Mesh(new THREE.TorusGeometry(.135,.045,8,24,Math.PI*1.5),new THREE.MeshStandardMaterial({color:0xd7dbe3,metalness:.85,roughness:.2,emissive:0x344455,emissiveIntensity:.5}));
+          hookMetal.rotation.set(0,0,-.6);hookHand.add(hookMetal);
+          const hookKnuckle=new THREE.Mesh(new THREE.SphereGeometry(.075,12,10),new THREE.MeshStandardMaterial({color:0xd7dbe3,metalness:.8,roughness:.25}));hookKnuckle.position.set(-.025,-.105,0);hookHand.add(hookKnuckle);
+          arm.add(hookHand);scene.add(arm);
           const impact=new THREE.Mesh(new THREE.TorusGeometry(.38,.045,8,40),new THREE.MeshBasicMaterial({color:0xffd45f,transparent:true,opacity:0,depthTest:false}));impact.rotation.x=Math.PI/2;impact.position.copy(origin);impact.position.y=.2;scene.add(impact);
           motions.push({kind:"foxy",attacker:attacker.mesh,arm,impact,from,to,fromTime:performance.now(),duration:reduced?1:1050});
         }
@@ -325,7 +333,10 @@ export function mountBattleScene(host){
           if(p>.54)a.attacker.position.lerpVectors(a.to,a.from,outEase);
           a.attacker.position.y=.11+Math.sin(Math.min(1,p/.54)*Math.PI)*.48-(slam*.16);
           a.attacker.rotation.z=Math.sin(p*Math.PI)*-.12;
-          a.arm.position.copy(a.to);a.arm.position.x+=.28;a.arm.position.y=.62-slam*.42;a.arm.rotation.z=-.45+slam*.95;
+          a.arm.position.set(a.to.x-.49,a.to.y+.78, a.to.z);
+          // Rotate around the shoulder so the hook at the far end, not the rear of the sleeve, strikes the card.
+          a.arm.rotation.z=.08-slam*1.18;
+          a.arm.scale.setScalar(1+slam*.04);
           a.impact.material.opacity=slam*(1-slam)*2.2;a.impact.scale.setScalar(.7+slam*1.8);
           if(p>=1){a.attacker.position.copy(a.from);a.attacker.position.y=.11;a.attacker.rotation.z=0;scene.remove(a.arm,a.impact);a.arm.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}});a.impact.geometry.dispose();a.impact.material.dispose();motions.splice(i,1)}
         }else if(a.kind==="slash"){
