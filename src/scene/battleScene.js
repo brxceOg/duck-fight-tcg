@@ -192,7 +192,7 @@ export function mountBattleScene(host){
       const mesh=new THREE.Mesh(new THREE.BoxGeometry(cardW,.075,cardL),[edge,edge,face,back,edge,edge]);
       const pos=positionFor(side,index);
       mesh.position.set(pos.x,1.05,side==="player"?3.7:-3.7);
-      mesh.rotation.set(Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
+      mesh.rotation.set(-Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
       scene.add(mesh);
       mesh.userData.duckCard={side,index};
       const record={mesh,tex,side,index,selected:false,lift:0,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
@@ -260,7 +260,7 @@ export function mountBattleScene(host){
           a.mesh.position.x=a.startX+(a.targetX-a.startX)*ease;
           a.mesh.position.z=a.startZ+(a.targetZ-a.startZ)*ease;
           a.mesh.position.y=.12+Math.sin(p*Math.PI)*.72;
-          a.mesh.rotation.x=(Math.PI/2)*(1-ease);
+          a.mesh.rotation.x=(-Math.PI/2)*(1-ease);
           a.mesh.rotation.z=(a.side==="enemy"?-.12:.12)*(1-ease);
           if(p>=1){a.mesh.position.set(a.targetX,.11,a.targetZ);a.mesh.rotation.set(0,a.side==="enemy"?Math.PI:0,0);a.kind="rest";motions.splice(i,1)}
         }else if(a.kind==="lunge"){
