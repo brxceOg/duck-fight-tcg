@@ -5,7 +5,7 @@ const other=side=>side==="player"?"enemy":"player";
 const removeDead=(board)=>board.filter(u=>u.hp>0);
 export function createBattle(ids){
  let d=ids.length?ids:CARDS.filter(c=>c.cost<=3).map(c=>c.id);
- return{player:{hp:5,maxB:1,b:1,board:[],hand:shuffle([...d,...d]).slice(0,4)},enemy:{hp:5,maxB:1,b:1,board:[],hand:shuffle([...CARDS,...CARDS].map(c=>c.id)).slice(0,4),deck:[]},turn:1,over:false,log:"Your turn. Play a duck!"}
+ return{player:{hp:5,maxB:1,b:1,board:[],hand:shuffle([...d,...d]).slice(0,4)},enemy:{hp:5,maxB:1,b:1,board:[],hand:shuffle([...CARDS,...CARDS].map(c=>c.id)).slice(0,4),deck:[]},turn:1,over:false,deathNoteUsed:false,log:"Your turn. Play a duck!"}
 }
 export function playCard(g,side,i){
  let p=g[side],c=cardById(p.hand[i]);
@@ -28,7 +28,7 @@ export function attack(g,side,i,t=0){
 }
 export function canUseAbility(g,side,index){
  const u=g?.[side]?.board?.[index];if(!u||g.over||g.turn<(u.stunnedUntil||0)||g.turn<(u.abilityReadyAt||0))return false;
- if(u.abilityKey==="death-note"&&u.abilityUsed)return false;
+ if(u.abilityKey==="death-note"&&g.deathNoteUsed)return false;
  return !!u.abilityKey&&u.abilityKey!=="";
 }
 export function useAbility(g,side,index,targetIndex){
@@ -43,7 +43,7 @@ export function useAbility(g,side,index,targetIndex){
   o.board.splice(targetIndex,1);o.deck??=[];o.deck.push(v.id);u.stunnedUntil=g.turn+2;u.abilityReadyAt=g.turn+4;
   g.log=u.name+" lifts "+v.name+" with magic and sends it back to the rival deck!";
  }else if(key==="death-note"){
-  v.markedForDeath=true;u.stunnedUntil=g.turn+2;u.abilityUsed=true;
+  v.markedForDeath=true;u.stunnedUntil=g.turn+2;g.deathNoteUsed=true;
   g.log=v.name+" has been marked for death!";
  }else if(key==="slash"){
   const targetRow=Math.floor(targetIndex/3),targetCol=targetIndex%3;
