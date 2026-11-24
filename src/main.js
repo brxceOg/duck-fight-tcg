@@ -27,4 +27,4 @@ function drawBattle(){
 }
 function restartBattle(){battleStarted=false;startBattle();$("#end-turn").disabled=false}
 $("#new-match").addEventListener("click",()=>{try{restartBattle()}catch(err){showBattleError(err)}});
-$("#end-turn").addEventListener("click",()=>{try{if(!game||game.over)return;selectedUnit=null;const oldEnemy=game.enemy.board.length;endTurn(game);if(game.enemy.board.length>oldEnemy){const id=game.enemy.board[game.enemy.board.length-1];animate3d("playCard",id,"enemy")}drawBattle()}catch(err){showBattleError(err)}});
+$("#end-turn").addEventListener("click",()=>{try{if(!game||game.over)return;selectedUnit=null;const oldEnemy=game.enemy.board.length;endTurn(game);if(game.enemy.board.length>oldEnemy){const id=game.enemy.board[game.enemy.board.length-1];animate3d("playCard",cardById(id),"enemy")}drawBattle()}catch(err){showBattleError(err)}});
