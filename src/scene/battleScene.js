@@ -8,8 +8,8 @@ export function mountBattleScene(host){
   const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches||false;
   try{
     scene=new THREE.Scene();
-    camera=new THREE.PerspectiveCamera(37,1,.1,50);
-    camera.position.set(0,9,9.5);camera.lookAt(0,0,0);
+    camera=new THREE.PerspectiveCamera(43,1,.1,50);
+    camera.position.set(0,8,8.5);camera.lookAt(0,0,0);
     renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:"low-power"});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
     renderer.setClearColor(0x000000,0);
@@ -19,10 +19,7 @@ export function mountBattleScene(host){
     scene.add(new THREE.HemisphereLight(0xffffff,0x26364d,2));
     const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-3,8,5);scene.add(key);
     const rim=new THREE.PointLight(0x63e7df,1.1,12);rim.position.set(0,3,-3);scene.add(rim);
-    const mat=new THREE.MeshStandardMaterial({color:0x246d76,roughness:.85,metalness:.05});
-    const table=new THREE.Mesh(new THREE.BoxGeometry(8,.18,5.3),mat);table.position.y=-.18;scene.add(table);
-    const trim=new THREE.Mesh(new THREE.BoxGeometry(8.08,.08,5.38),new THREE.MeshStandardMaterial({color:0x102b42,roughness:.55}));trim.position.y=-.29;scene.add(trim);
-    const resize=()=>{if(!alive)return;const w=Math.max(host.clientWidth,1),h=Math.max(host.clientHeight,1);camera.aspect=w/h;camera.fov=w/h<.85?43:37;camera.position.z=w/h<.85?11.7:9.5;camera.updateProjectionMatrix();renderer.setSize(w,h,false)};
+    const resize=()=>{if(!alive)return;const w=Math.max(host.clientWidth,1),h=Math.max(host.clientHeight,1);camera.aspect=w/h;camera.fov=w/h<.85?48:43;camera.position.z=w/h<.85?10:8.5;camera.updateProjectionMatrix();renderer.setSize(w,h,false)};
     if(typeof ResizeObserver!=="undefined"){observer=new ResizeObserver(resize);observer.observe(host)}else window.addEventListener("resize",resize);
     resize();
     const api={
@@ -37,11 +34,11 @@ export function mountBattleScene(host){
         const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
         const back=new THREE.MeshStandardMaterial({color:side==="enemy"?0x522d63:0x167d83,roughness:.45,metalness:.15});
         const face=new THREE.MeshStandardMaterial({map:tex,roughness:.5,metalness:.08});
-        const mesh=new THREE.Mesh(new THREE.BoxGeometry(.9,.055,1.22),[back,back,face,back,back,back]);
-        mesh.position.set((Math.random()-.5)*.35,.18,side==="player"?3.7:-3.7);
+        const mesh=new THREE.Mesh(new THREE.BoxGeometry(1.35,.075,1.85),[back,back,face,back,back,back]);
+        mesh.position.set((Math.random()-.5)*.22,.24,side==="player"?3.9:-3.9);
         mesh.rotation.set(0,side==="enemy"?Math.PI:0,side==="enemy"?-.14:.14);
-        mesh.scale.setScalar(.68);scene.add(mesh);
-        const targetZ=side==="player"?1.45:-1.45;
+        mesh.scale.setScalar(.9);scene.add(mesh);
+        const targetZ=side==="player"?1.25:-1.25;
         cards.push({mesh,from:performance.now(),duration:reduced?180:720,startZ:mesh.position.z,targetZ,kind:"play",side,tex});
         if(cards.length>10){const old=cards.shift();scene.remove(old.mesh);old.mesh.geometry.dispose();old.mesh.material.forEach?.(m=>m.dispose());old.tex.dispose()}
       },
@@ -55,7 +52,7 @@ export function mountBattleScene(host){
       }
     };
     host.duck3dApi=api;host.dataset.duck3d="ready";
-    const render=(now)=>{if(!alive)return;for(let i=cards.length-1;i>=0;i--){const a=cards[i],p=Math.min(1,(now-a.from)/a.duration),ease=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;if(a.kind==="play"){a.mesh.position.z=a.startZ+(a.targetZ-a.startZ)*ease;a.mesh.position.y=.18+Math.sin(p*Math.PI)*.65;a.mesh.rotation.y=(a.side==="enemy"?Math.PI:0)+(a.side==="enemy"?-1:1)*(1-p)*.7;a.mesh.scale.setScalar(.68+.32*ease);if(p>=1){a.mesh.position.y=.12;cards.splice(i,1);cards.push({...a,kind:"rest",from:now,duration:2600,startZ:a.targetZ,targetZ:a.targetZ})}}else if(a.kind==="attack"){a.mesh.position.z=a.startZ+(a.targetZ-a.startZ)*Math.sin(p*Math.PI);a.mesh.position.x=a.startX+(a.targetX-a.startX)*ease;if(p>=1){scene.remove(a.mesh);a.mesh.geometry.dispose();a.mesh.material.dispose();cards.splice(i,1)}}else if(a.kind==="rest"&&p>=1){scene.remove(a.mesh);a.mesh.geometry.dispose();a.mesh.material.forEach?.(m=>m.dispose());a.tex?.dispose();cards.splice(i,1)}}
+    const render=(now)=>{if(!alive)return;for(let i=cards.length-1;i>=0;i--){const a=cards[i],p=Math.min(1,(now-a.from)/a.duration),ease=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;if(a.kind==="play"){a.mesh.position.z=a.startZ+(a.targetZ-a.startZ)*ease;a.mesh.position.y=.24+Math.sin(p*Math.PI)*.95;a.mesh.rotation.y=(a.side==="enemy"?Math.PI:0)+(a.side==="enemy"?-1:1)*(1-p)*.7;a.mesh.scale.setScalar(.9+.1*ease);if(p>=1){a.mesh.position.y=.08;cards.splice(i,1);cards.push({...a,kind:"rest",from:now,duration:2600,startZ:a.targetZ,targetZ:a.targetZ})}}else if(a.kind==="attack"){a.mesh.position.z=a.startZ+(a.targetZ-a.startZ)*Math.sin(p*Math.PI);a.mesh.position.x=a.startX+(a.targetX-a.startX)*ease;if(p>=1){scene.remove(a.mesh);a.mesh.geometry.dispose();a.mesh.material.dispose();cards.splice(i,1)}}else if(a.kind==="rest"&&p>=1){scene.remove(a.mesh);a.mesh.geometry.dispose();a.mesh.material.forEach?.(m=>m.dispose());a.tex?.dispose();cards.splice(i,1)}}
       renderer.render(scene,camera);raf=requestAnimationFrame(render)};
     raf=requestAnimationFrame(render);
     host.addEventListener("duck3d-dispose",()=>{alive=false;cancelAnimationFrame(raf);observer?.disconnect();renderer.dispose();renderer.domElement.remove()},{once:true});
