@@ -273,7 +273,8 @@ export function mountBattleScene(host){
           a.mesh.position.y=.11+a.lift+bob;
         }
       }
-      if(pawnTarget.visible)pawnTarget.quaternion.copy(camera.quaternion);\n      renderer.render(scene,camera);raf=requestAnimationFrame(render);
+      if(pawnTarget.visible)pawnTarget.quaternion.copy(camera.quaternion);
+      renderer.render(scene,camera);raf=requestAnimationFrame(render);
     };
     raf=requestAnimationFrame(render);
     host.addEventListener("duck3d-dispose",()=>{alive=false;cancelAnimationFrame(raf);observer?.disconnect();for(const unit of [...live.keys()])removeUnit(unit);renderer.domElement.removeEventListener("pointerdown",onCardPointerDown);renderer.dispose();renderer.domElement.remove()},{once:true});
