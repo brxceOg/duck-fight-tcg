@@ -4,7 +4,7 @@ export function mountBattleScene(host){
   if(!host||host.dataset.duck3d==="ready")return host?.duck3dApi||null;
   host.dataset.duck3d="loading";
   let renderer,scene,camera,observer,raf=0,alive=true;
-  const live=new Map(),motions=[];
+  const live=new Map(),motions=[];let onCardTap=()=>{};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches||false;
   const cardW=1.15,cardL=1.52;
   try{
@@ -15,7 +15,7 @@ export function mountBattleScene(host){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
     renderer.setClearColor(0x000000,0);
     renderer.domElement.className="battle-3d-canvas";
-    renderer.domElement.setAttribute("aria-hidden","true");
+    renderer.domElement.setAttribute("aria-label","3D battle cards; tap a card to select or attack");renderer.domElement.style.touchAction="none";
     host.prepend(renderer.domElement);
     scene.add(new THREE.HemisphereLight(0xffffff,0x26364d,2));
     const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-3,8,5);scene.add(key);
@@ -67,7 +67,10 @@ export function mountBattleScene(host){
       mesh.position.set(pos.x,1.05,side==="player"?3.7:-3.7);
       mesh.rotation.set(Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
       scene.add(mesh);
-      const record={mesh,tex,side,index,selectGlow,selectFrame,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
+      const targetGlow=new THREE.Mesh(new THREE.PlaneGeometry(cardW+0.24,cardL+0.24),new THREE.MeshBasicMaterial({color:0xffd45f,transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false}));targetGlow.rotation.x=-Math.PI/2;targetGlow.position.y=.057;targetGlow.visible=false;mesh.add(targetGlow);
+      const targetFrame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(cardW+0.22,cardL+0.22)),new THREE.LineBasicMaterial({color:0xffe18a,transparent:true,opacity:1}));targetFrame.rotation.x=-Math.PI/2;targetFrame.position.y=.067;targetFrame.visible=false;mesh.add(targetFrame);
+      mesh.userData.duckCard={side,index};
+      const record={mesh,tex,side,index,selectGlow,selectFrame,targetGlow,targetFrame,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
       live.set(unit,record);
       motions.push(record);
     };
@@ -79,7 +82,7 @@ export function mountBattleScene(host){
           board.forEach((unit,index)=>{
             let a=live.get(unit);
             if(!a){createUnit(unit,side,index,board.length);a=live.get(unit)}
-            a.side=side;a.index=index;
+            a.side=side;a.index=index;a.mesh.userData.duckCard={side,index};
             const p=positionFor(side,index);
             a.targetX=p.x;a.targetZ=p.z;
             if(a.kind!=="place"){a.mesh.position.x=p.x;a.mesh.position.z=p.z}
@@ -88,11 +91,13 @@ export function mountBattleScene(host){
       },
       selectUnit(index=null){
         for(const a of live.values()){
-          const selected=a.side==="player"&&a.index===index;
+          const selected=a.side==="player"&&a.index===index;const target=a.side==="enemy"&&index!==null;
           const edge=a.mesh.material[0];edge.emissive.setHex(selected?0x2ccfc7:0x000000);edge.emissiveIntensity=selected?1.6:0;
-          a.selectGlow.visible=selected;a.selectFrame.visible=selected;
+          a.selectGlow.visible=selected;a.selectFrame.visible=selected;a.targetGlow.visible=target;a.targetFrame.visible=target;
+          if(a.side==="enemy"){edge.emissive.setHex(target?0xb88719:0x000000);edge.emissiveIntensity=target?1.1:0}
         }
       },
+      setCardTapHandler(handler){onCardTap=typeof handler==="function"?handler:()=>{};},
       attack(side="player",index=0,targetIndex=0){
         const board=[...live.entries()].filter(([,a])=>a.side===side).sort((x,y)=>x[1].index-y[1].index);
         const targetBoard=[...live.entries()].filter(([,a])=>a.side!==(side)).sort((x,y)=>x[1].index-y[1].index);
@@ -102,6 +107,19 @@ export function mountBattleScene(host){
         motions.push({kind:"lunge",mesh:attacker.mesh,from,to,fromTime:performance.now(),duration:reduced?100:430});
       }
     };
+    const onCardPointerDown=e=>{
+      if(!alive||e.isPrimary===false||e.button!==0)return;
+      const rect=renderer.domElement.getBoundingClientRect();
+      if(!rect.width||!rect.height)return;
+      pointer.set(((e.clientX-rect.left)/rect.width)*2-1,-((e.clientY-rect.top)/rect.height)*2+1);
+      raycaster.setFromCamera(pointer,camera);
+      const hits=raycaster.intersectObjects([...live.values()].map(a=>a.mesh),false);
+      const card=hits[0]?.object?.userData?.duckCard;
+      if(!card)return;
+      e.preventDefault();
+      onCardTap(card.side,card.index);
+    };
+    renderer.domElement.addEventListener("pointerdown",onCardPointerDown,{passive:false});
     host.duck3dApi=api;host.dataset.duck3d="ready";
     const render=(now)=>{
       if(!alive)return;
@@ -123,7 +141,7 @@ export function mountBattleScene(host){
       renderer.render(scene,camera);raf=requestAnimationFrame(render);
     };
     raf=requestAnimationFrame(render);
-    host.addEventListener("duck3d-dispose",()=>{alive=false;cancelAnimationFrame(raf);observer?.disconnect();for(const unit of [...live.keys()])removeUnit(unit);renderer.dispose();renderer.domElement.remove()},{once:true});
+    host.addEventListener("duck3d-dispose",()=>{alive=false;cancelAnimationFrame(raf);observer?.disconnect();for(const unit of [...live.keys()])removeUnit(unit);renderer.domElement.removeEventListener("pointerdown",onCardPointerDown);renderer.dispose();renderer.domElement.remove()},{once:true});
     return api;
   }catch(err){host.dataset.duck3d="failed";renderer?.dispose();renderer?.domElement.remove();console.warn("3D battle layer unavailable; 2D battle remains active",err);return null}
 }
