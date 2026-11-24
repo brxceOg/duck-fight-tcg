@@ -14,8 +14,19 @@ initShop({onState:refresh});initDeckBuilder();refresh();
 async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=selectglow10");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
 function animate3d(method,...args){if(battle3d){battle3d[method](...args);return}if(battle3dLoading)pending3d.push([method,...args])}
 function startBattle(){ensureBattle3D();const saved=getState();const validDeck=(Array.isArray(saved.deck)?saved.deck:[]).filter(id=>cardById(id));game=createBattle(validDeck);battleStarted=true;paidWin=false;selectedUnit=null;drawBattle()}
-function handleBoardPointer(e){
- const b=e.target.closest("button[data-unit]");if(!b||!game||game.over)return;
+function handleBoardClick(e){
+ let b=e.target?.closest?.("button[data-unit]");
+ if(!b&&Number.isFinite(e.clientX)&&Number.isFinite(e.clientY)){
+  const under=document.elementFromPoint(e.clientX,e.clientY);
+  b=under?.closest?.("button[data-unit]")||null;
+  if(!b){
+   for(const candidate of document.querySelectorAll("#player-board button[data-unit],#enemy-board button[data-unit]")){
+    const r=candidate.getBoundingClientRect();
+    if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){b=candidate;break}
+   }
+  }
+ }
+ if(!b||!game||game.over)return;
  const side=b.dataset.side,index=Number(b.dataset.unit);
  if(side==="player"){
   if(!game.player.board[index])return;
@@ -23,14 +34,15 @@ function handleBoardPointer(e){
   $("#battle-message").textContent=selectedUnit===null?"Choose a duck to attack.":"Selected "+game.player.board[index].name+". Now tap a rival duck to attack.";
   drawBattle();e.preventDefault();return;
  }
- if(side==="enemy"&&selectedUnit!==null&&game.player.board[selectedUnit]&&game.enemy.board[index]){
+ if(side==="enemy"&&selectedUnit!==null&&game.player.board[selectedUnit]){
   const attacker=selectedUnit,ok=attack(game,"player",attacker,index);
   if(ok)animate3d("attack","player",attacker,index);
   selectedUnit=null;if(ok)drawBattle();e.preventDefault();
  }
 }
-$("#player-board").addEventListener("pointerup",handleBoardPointer);
-$("#enemy-board").addEventListener("pointerup",handleBoardPointer);
+// Use the native click activation synthesized by iOS Safari after touch. Do not
+// rerender on pointerup: replacing a button during pointerup can cancel its click.
+$("#battle").addEventListener("click",handleBoardClick,true);
 function drawBattle(){
  if(!game)return;
  $("#player-hp").textContent=game.player.hp+" ♥";$("#enemy-hp").textContent=game.enemy.hp+" ♥";
