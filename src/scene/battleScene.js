@@ -51,7 +51,7 @@ export function mountBattleScene(host){
       mesh.position.set(pos.x,1.05,side==="player"?3.7:-3.7);
       mesh.rotation.set(Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
       scene.add(mesh);
-      const record={mesh,tex,side,from:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
+      const record={mesh,tex,side,index,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
       live.set(unit,record);
       motions.push(record);
     };
@@ -63,7 +63,7 @@ export function mountBattleScene(host){
           board.forEach((unit,index)=>{
             let a=live.get(unit);
             if(!a){createUnit(unit,side,index,board.length);a=live.get(unit)}
-            a.side=side;
+            a.side=side;a.index=index;
             const p=positionFor(side,index,board.length);
             a.targetX=p.x;a.targetZ=p.z;
             if(a.kind!=="place"){a.mesh.position.x=p.x;a.mesh.position.z=p.z}
@@ -71,8 +71,8 @@ export function mountBattleScene(host){
         }
       },
       attack(side="player",index=0,targetIndex=0){
-        const board=side==="player"?[...live.entries()].filter(([,a])=>a.side==="player"):[...live.entries()].filter(([,a])=>a.side==="enemy");
-        const targetBoard=side==="player"?[...live.entries()].filter(([,a])=>a.side==="enemy"):[...live.entries()].filter(([,a])=>a.side==="player");
+        const board=[...live.entries()].filter(([,a])=>a.side===side).sort((x,y)=>x[1].index-y[1].index);
+        const targetBoard=[...live.entries()].filter(([,a])=>a.side!==(side)).sort((x,y)=>x[1].index-y[1].index);
         const attacker=board[index]?.[1],target=targetBoard[targetIndex]?.[1];
         if(!attacker)return;
         const from=attacker.mesh.position.clone(),to=target?target.mesh.position.clone():new THREE.Vector3(from.x,.3,side==="player"?-2.8:2.8);
