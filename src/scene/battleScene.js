@@ -150,6 +150,8 @@ export function mountBattleScene(host){
     const resize=()=>{if(!alive)return;const w=Math.max(host.clientWidth,1),h=Math.max(host.clientHeight,1);camera.aspect=w/h;camera.fov=w/h<.85?48:43;camera.position.z=w/h<.85?9.4:8.4;camera.updateProjectionMatrix();renderer.setSize(w,h,false)};
     if(typeof ResizeObserver!=="undefined"){observer=new ResizeObserver(resize);observer.observe(host)}else window.addEventListener("resize",resize);
     resize();
+    const cardBackTexture=new THREE.TextureLoader().load(new URL("./IMG_1418.jpeg",document.baseURI).href);
+    cardBackTexture.colorSpace=THREE.SRGBColorSpace;
     const makeTexture=(card)=>{
       const canvas=document.createElement("canvas");canvas.width=512;canvas.height=700;
       const ctx=canvas.getContext("2d");
@@ -185,7 +187,9 @@ export function mountBattleScene(host){
       const tex=makeTexture(unit);
       const edge=new THREE.MeshStandardMaterial({color:side==="enemy"?0x6a315d:0x146c75,roughness:.4,metalness:.2});
       const face=new THREE.MeshStandardMaterial({map:tex,roughness:.48,metalness:.04});
-      const mesh=new THREE.Mesh(new THREE.BoxGeometry(cardW,.075,cardL),[edge,edge,face,edge,edge,edge]);
+      const back=new THREE.MeshStandardMaterial({map:cardBackTexture,roughness:.48,metalness:.04});
+      // BoxGeometry material order: +X, -X, +Y (front), -Y (card back), +Z, -Z.
+      const mesh=new THREE.Mesh(new THREE.BoxGeometry(cardW,.075,cardL),[edge,edge,face,back,edge,edge]);
       const pos=positionFor(side,index);
       mesh.position.set(pos.x,1.05,side==="player"?3.7:-3.7);
       mesh.rotation.set(Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
@@ -277,7 +281,7 @@ export function mountBattleScene(host){
       renderer.render(scene,camera);raf=requestAnimationFrame(render);
     };
     raf=requestAnimationFrame(render);
-    host.addEventListener("duck3d-dispose",()=>{alive=false;cancelAnimationFrame(raf);observer?.disconnect();for(const unit of [...live.keys()])removeUnit(unit);renderer.domElement.removeEventListener("pointerdown",onCardPointerDown);renderer.dispose();renderer.domElement.remove()},{once:true});
+    host.addEventListener("duck3d-dispose",()=>{alive=false;cancelAnimationFrame(raf);observer?.disconnect();for(const unit of [...live.keys()])removeUnit(unit);renderer.domElement.removeEventListener("pointerdown",onCardPointerDown);cardBackTexture.dispose();renderer.dispose();renderer.domElement.remove()},{once:true});
     return api;
   }catch(err){host.dataset.duck3d="failed";renderer?.dispose();renderer?.domElement.remove();console.warn("3D battle layer unavailable; 2D battle remains active",err);return null}
 }
