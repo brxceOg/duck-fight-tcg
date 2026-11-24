@@ -37,7 +37,7 @@ export function mountBattleScene(host){
       ctx.font="bold 30px sans-serif";ctx.fillText("⚔ "+(card?.attack||1)+"    ♥ "+(card?.health||1),256,630);
       const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;return tex;
     };
-    const positionFor=(side,index,count)=>({x:(index-(count-1)/2)*1.55,z:side==="player"?1.25:-1.25});
+    const positionFor=(side,index,count)=>({x:(index-(count-1)/2)*1.55,z:side==="player"?2.35:-2.35});
     const removeUnit=(unit)=>{
       const a=live.get(unit);if(!a)return;
       scene.remove(a.mesh);a.mesh.geometry.dispose();a.mesh.material.forEach(m=>m.dispose());a.tex.dispose();live.delete(unit);
@@ -75,7 +75,7 @@ export function mountBattleScene(host){
         const targetBoard=[...live.entries()].filter(([,a])=>a.side!==(side)).sort((x,y)=>x[1].index-y[1].index);
         const attacker=board[index]?.[1],target=targetBoard[targetIndex]?.[1];
         if(!attacker)return;
-        const from=attacker.mesh.position.clone(),to=target?target.mesh.position.clone():new THREE.Vector3(from.x,.3,side==="player"?-2.8:2.8);
+        const from=attacker.mesh.position.clone(),to=target?target.mesh.position.clone():new THREE.Vector3(from.x,.3,side==="player"?-2.35:2.35);
         motions.push({kind:"lunge",mesh:attacker.mesh,from,to,fromTime:performance.now(),duration:reduced?100:430});
       }
     };
