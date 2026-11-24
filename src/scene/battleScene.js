@@ -184,6 +184,14 @@ export function mountBattleScene(host){
         for(const a of live.values())a.selected=a.side==="player"&&a.index===index;
       },
       setCardTapHandler(handler){onCardTap=typeof handler==="function"?handler:()=>{};},
+      attackDirect(side="player",index=0){
+        const attacker=[...live.values()].find(a=>a.side===side&&a.index===index);
+        if(!attacker)return;
+        const from=attacker.mesh.position.clone();
+        const pawn=side==="player"?enemyPawn:playerPawn;
+        const to=pawn.position.clone();to.y=.72;
+        motions.push({kind:"lunge",mesh:attacker.mesh,from,to,fromTime:performance.now(),duration:reduced?100:520});
+      },
       attack(side="player",index=0,targetIndex=0){
         const board=[...live.entries()].filter(([,a])=>a.side===side).sort((x,y)=>x[1].index-y[1].index);
         const targetBoard=[...live.entries()].filter(([,a])=>a.side!==(side)).sort((x,y)=>x[1].index-y[1].index);
