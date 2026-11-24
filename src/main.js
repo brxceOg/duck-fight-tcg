@@ -22,10 +22,10 @@ function handleCardTap(side,index){
   $("#battle-message").textContent=selectedUnit===null?"Choose a duck to attack.":"Selected "+game.player.board[index].name+". Now tap a rival duck to attack.";
   drawBattle();return;
  }
- if(side==="enemy-pawn"&&game.enemy.board.length===0){
+ if(side==="enemy-pawn"&&game.turn>1&&!game.over&&game.enemy.board.length===0){
   if(selectedUnit===null||!game.player.board[selectedUnit]){$("#battle-message").textContent="Select one of your ducks first, then target the rival pawn.";return}
   const attacker=selectedUnit,ok=attack(game,"player",attacker);
-  if(ok)animate3d("attackDirect",attacker);
+  if(ok)animate3d("attackDirect","player",attacker);
   selectedUnit=null;if(ok)drawBattle();return;
  }
  if(side==="enemy"&&selectedUnit!==null&&game.player.board[selectedUnit]&&game.enemy.board[index]){
@@ -44,7 +44,7 @@ function drawBattle(){
  $("#player-bubbles").textContent="🫧 "+game.player.b+" / "+game.player.maxB;$("#enemy-bubbles").textContent="🫧 "+game.enemy.b+" / "+game.enemy.maxB;
  $("#turn-label").textContent="TURN "+game.turn;$("#battle-message").textContent=game.log||"Your turn. Play a duck!";
  for(const side of ["player","enemy"]){const target=$(side==="player"?"#player-board":"#enemy-board");target.innerHTML=game[side].board.map((u,i)=>'<button type="button" class="unit '+(side==="enemy"?"enemy":"")+'" data-side="'+side+'" data-unit="'+i+'"><b>'+u.name+'</b><span>⚔ '+u.attack+' · ♥ '+u.hp+'</span></button>').join("")}
- animate3d("syncBoard",game.player.board,game.enemy.board);animate3d("selectUnit",selectedUnit);animate3d("setPawnTargetable",!game.over&&game.enemy.board.length===0&&game.player.board.some(u=>!u.attacked));
+ animate3d("syncBoard",game.player.board,game.enemy.board);animate3d("selectUnit",selectedUnit);animate3d("setPawnTargetable",game.turn>1&&!game.over&&game.enemy.board.length===0&&game.player.board.some(u=>!u.attacked));
  $("#player-board").querySelectorAll("[data-unit]").forEach(b=>{b.setAttribute("aria-label","Select "+game.player.board[Number(b.dataset.unit)].name+" to attack");b.setAttribute("aria-pressed",String(selectedUnit===Number(b.dataset.unit)))});
  $("#enemy-board").querySelectorAll("[data-unit]").forEach(b=>{b.setAttribute("aria-label",selectedUnit===null?"Enemy duck":"Attack "+game.enemy.board[Number(b.dataset.unit)].name);});
  const hand=$("#hand");hand.innerHTML=game.player.hand.map((id,i)=>{const c=cardById(id);return '<button type="button" class="hand-card" data-hand="'+i+'" '+(!c||game.player.b<c.cost||game.player.board.length>=6||game.over?"disabled":"")+'><img src="'+(c?.front||"./assets/cards/card-back.jpg")+'" alt=""><b>'+(c?.name||"Unknown duck")+'</b><small>'+(c?.cost??"?")+' 🫧 · '+(c?.attack??"?")+'/'+(c?.health??"?")+'</small></button>'}).join("");
