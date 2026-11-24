@@ -1,4 +1,9 @@
 export const CARDS=[
+{id:"foxy-duck",name:"Foxy Duck",set:"Pirate’s Revenge",rarity:"Secret Rare",cost:2,attack:3,health:2,ability:"HOOK • Deal 1 damage and make the target untargetable for one turn. Cooldown: 2 turns.",abilityKey:"hook",front:"./Foxy duck.JPG"},
+{id:"twilight-duck",name:"Twilight Sparkle Duck",set:"Elements of Harmony",rarity:"Secret Rare",cost:3,attack:2,health:3,ability:"TELEKINESIS • Return an enemy duck to its deck. Twilight is stunned for one turn. Cooldown: 4 turns.",abilityKey:"telekinesis",front:"./Twilight duck.JPG"},
+{id:"misa-duck",name:"Misa Duck",set:"Kira’s Devotion",rarity:"Secret Rare",cost:3,attack:4,health:1,ability:"DEATH NOTE • Mark an enemy duck to die at the end of your turn. Misa is stunned for one turn. Once per battle.",abilityKey:"death-note",front:"./Misaduck.JPG"},
+{id:"jeff-duck",name:"Jeff the Killer Duck",set:"Nightmare Files",rarity:"Secret Rare",cost:2,attack:2,health:2,ability:"CIRCULAR SLASH • Deal 2 damage to the target and each adjacent enemy duck. Cooldown: 2 turns.",abilityKey:"slash",front:"./Jeffthekillerduck.JPG"},
+{id:"basic-rubber-ducky",name:"Basic Rubber Ducky",set:"Bath Basics",rarity:"Common",cost:1,attack:1,health:1,ability:"No special ability.",front:"./Basicduck.JPG"},
 {id:"library-mage",name:"Arcane Quacker",set:"Classic Bath",rarity:"Ultra Rare",cost:3,attack:3,health:4,ability:"On Play: draw a card.",front:"./IMG_1429.jpeg"},
 {id:"nightmare-duck",name:"The Dread Quacker",set:"Pirate Cove",rarity:"Secret Rare",cost:4,attack:5,health:3,ability:"On Attack: deal 1 extra damage.",front:"./IMG_1430.jpeg"},
 {id:"bubble-buddy",name:"Bubble Buddy",set:"Classic Bath",rarity:"Common",cost:1,attack:1,health:3,ability:"A loyal little blocker.",emoji:"🫧"},
