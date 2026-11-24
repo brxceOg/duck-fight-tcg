@@ -36,7 +36,7 @@ export function useAbility(g,side,index,targetIndex){
  if(!canUseAbility(g,side,index)||!v||g.turn<(v.untargetableUntil||0))return{ok:false};
  const key=u.abilityKey;let animation=key;
  if(key==="hook"){
-  v.hp-=1;v.untargetableUntil=g.turn+1;u.abilityReadyAt=g.turn+2;
+  v.hp-=1;v.untargetableUntil=g.turn+2;u.abilityReadyAt=g.turn+2;
   if(v.hp<=0)o.board.splice(targetIndex,1);
   g.log=u.name+" hooks "+v.name+"! It takes 1 damage and is pinned.";
  }else if(key==="telekinesis"){
