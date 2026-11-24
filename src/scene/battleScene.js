@@ -39,7 +39,7 @@ export function mountBattleScene(host){
         const face=new THREE.MeshStandardMaterial({map:tex,roughness:.5,metalness:.08});
         const mesh=new THREE.Mesh(new THREE.BoxGeometry(.9,.055,1.22),[back,back,face,back,back,back]);
         mesh.position.set((Math.random()-.5)*.35,.18,side==="player"?3.7:-3.7);
-        mesh.rotation.set(-Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.14:.14);
+        mesh.rotation.set(0,side==="enemy"?Math.PI:0,side==="enemy"?-.14:.14);
         mesh.scale.setScalar(.68);scene.add(mesh);
         const targetZ=side==="player"?1.45:-1.45;
         cards.push({mesh,from:performance.now(),duration:reduced?180:720,startZ:mesh.position.z,targetZ,kind:"play",side,tex});
