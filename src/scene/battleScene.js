@@ -59,18 +59,12 @@ export function mountBattleScene(host){
       const edge=new THREE.MeshStandardMaterial({color:side==="enemy"?0x6a315d:0x146c75,roughness:.4,metalness:.2});
       const face=new THREE.MeshStandardMaterial({map:tex,roughness:.48,metalness:.04});
       const mesh=new THREE.Mesh(new THREE.BoxGeometry(cardW,.075,cardL),[edge,edge,face,edge,edge,edge]);
-      const selectGlow=new THREE.Mesh(new THREE.PlaneGeometry(cardW+0.22,cardL+0.22),new THREE.MeshBasicMaterial({color:0x4ffff0,transparent:true,opacity:.48,side:THREE.DoubleSide,depthWrite:false}));
-      selectGlow.rotation.x=-Math.PI/2;selectGlow.position.y=.055;selectGlow.visible=false;mesh.add(selectGlow);
-      const selectFrame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(cardW+0.2,cardL+0.2)),new THREE.LineBasicMaterial({color:0xbaffff,transparent:true,opacity:1}));
-      selectFrame.rotation.x=-Math.PI/2;selectFrame.position.y=.065;selectFrame.visible=false;mesh.add(selectFrame);
       const pos=positionFor(side,index);
       mesh.position.set(pos.x,1.05,side==="player"?3.7:-3.7);
       mesh.rotation.set(Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
       scene.add(mesh);
-      const targetGlow=new THREE.Mesh(new THREE.PlaneGeometry(cardW+0.24,cardL+0.24),new THREE.MeshBasicMaterial({color:0xffd45f,transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false}));targetGlow.rotation.x=-Math.PI/2;targetGlow.position.y=.057;targetGlow.visible=false;mesh.add(targetGlow);
-      const targetFrame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(cardW+0.22,cardL+0.22)),new THREE.LineBasicMaterial({color:0xffe18a,transparent:true,opacity:1}));targetFrame.rotation.x=-Math.PI/2;targetFrame.position.y=.067;targetFrame.visible=false;mesh.add(targetFrame);
       mesh.userData.duckCard={side,index};
-      const record={mesh,tex,side,index,selectGlow,selectFrame,targetGlow,targetFrame,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
+      const record={mesh,tex,side,index,selected:false,lift:0,fromTime:performance.now(),duration:reduced?1:720,startX:pos.x,startZ:side==="player"?3.7:-3.7,targetX:pos.x,targetZ:pos.z,kind:"place"};
       live.set(unit,record);
       motions.push(record);
     };
@@ -90,12 +84,7 @@ export function mountBattleScene(host){
         }
       },
       selectUnit(index=null){
-        for(const a of live.values()){
-          const selected=a.side==="player"&&a.index===index;const target=a.side==="enemy"&&index!==null;
-          const edge=a.mesh.material[0];edge.emissive.setHex(selected?0x2ccfc7:0x000000);edge.emissiveIntensity=selected?1.6:0;
-          a.selectGlow.visible=selected;a.selectFrame.visible=selected;a.targetGlow.visible=target;a.targetFrame.visible=target;
-          if(a.side==="enemy"){edge.emissive.setHex(target?0xb88719:0x000000);edge.emissiveIntensity=target?1.1:0}
-        }
+        for(const a of live.values())a.selected=a.side==="player"&&a.index===index;
       },
       setCardTapHandler(handler){onCardTap=typeof handler==="function"?handler:()=>{};},
       attack(side="player",index=0,targetIndex=0){
@@ -136,6 +125,14 @@ export function mountBattleScene(host){
           a.mesh.position.lerpVectors(a.from,a.to,Math.sin(p*Math.PI)*.72);
           a.mesh.position.y=.11+Math.sin(p*Math.PI)*.55;
           if(p>=1){a.mesh.position.copy(a.from);motions.splice(i,1)}
+        }
+      }
+      for(const a of live.values()){
+        if(a.kind!=="place"&&a.kind!=="lunge"){
+          const liftTarget=a.selected?.42:0;
+          a.lift+=(liftTarget-a.lift)*.12;
+          const bob=a.selected?Math.sin(now*.0027+a.index*.65)*.045:0;
+          a.mesh.position.y=.11+a.lift+bob;
         }
       }
       renderer.render(scene,camera);raf=requestAnimationFrame(render);
