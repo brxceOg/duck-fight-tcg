@@ -124,3 +124,7 @@ body:has(#battle.active) #view{position:fixed;inset:0;width:100%;height:100dvh;o
 #battle .unit.attack-target::after{content:"";position:absolute;inset:-3px;border:2px solid #ffd45f;border-radius:9px;box-shadow:0 0 10px 3px #ffd45f88;pointer-events:none}
 @keyframes cardSelectPulse{from{filter:brightness(1);transform:scale(1)}to{filter:brightness(1.35);transform:scale(1.045)}}
 #battle .unit:focus-visible{outline:3px solid #fff!important;outline-offset:4px}
+
+/* Direct touch picking: visible Three.js card meshes own battle hit testing. */
+#battle .arena .battle-3d-canvas{z-index:7;pointer-events:auto;touch-action:none;cursor:pointer}
+#battle .arena .board{pointer-events:none}
