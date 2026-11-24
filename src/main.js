@@ -37,7 +37,7 @@ function drawBattle(){
  $("#player-hp").textContent=game.player.hp+" ♥";$("#enemy-hp").textContent=game.enemy.hp+" ♥";
  $("#player-bubbles").textContent="🫧 "+game.player.b+" / "+game.player.maxB;$("#enemy-bubbles").textContent="🫧 "+game.enemy.b+" / "+game.enemy.maxB;
  $("#turn-label").textContent="TURN "+game.turn;$("#battle-message").textContent=game.log||"Your turn. Play a duck!";
- for(const side of ["player","enemy"]){const target=$(side==="player"?"#player-board":"#enemy-board");target.innerHTML=game[side].board.map((u,i)=>'<button type="button" class="unit '+(side==="enemy"?"enemy":"")+(selectedUnit===i&&side==="player"?" selected":"")+'" data-side="'+side+'" data-unit="'+i+'"><b>'+u.name+'</b><span>⚔ '+u.attack+' · ♥ '+u.hp+'</span></button>').join("")}
+ for(const side of ["player","enemy"]){const target=$(side==="player"?"#player-board":"#enemy-board");target.innerHTML=game[side].board.map((u,i)=>'<button type="button" class="unit '+(side==="enemy"?"enemy":"")+'" data-side="'+side+'" data-unit="'+i+'"><b>'+u.name+'</b><span>⚔ '+u.attack+' · ♥ '+u.hp+'</span></button>').join("")}
  animate3d("syncBoard",game.player.board,game.enemy.board);animate3d("selectUnit",selectedUnit);
  $("#player-board").querySelectorAll("[data-unit]").forEach(b=>{b.setAttribute("aria-label","Select "+game.player.board[Number(b.dataset.unit)].name+" to attack");b.setAttribute("aria-pressed",String(selectedUnit===Number(b.dataset.unit)))});
  $("#enemy-board").querySelectorAll("[data-unit]").forEach(b=>{b.setAttribute("aria-label",selectedUnit===null?"Enemy duck":"Attack "+game.enemy.board[Number(b.dataset.unit)].name);b.classList.toggle("attack-target",selectedUnit!==null)});
