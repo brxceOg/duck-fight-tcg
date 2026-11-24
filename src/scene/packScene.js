@@ -1,0 +1,1 @@
+export function animatePack(element){element.classList.add("opened")}
