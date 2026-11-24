@@ -20,6 +20,41 @@ export function mountBattleScene(host){
     scene.add(new THREE.HemisphereLight(0xffffff,0x26364d,2));
     const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-3,8,5);scene.add(key);
     const rim=new THREE.PointLight(0x63e7df,1.1,12);rim.position.set(0,3,-3);scene.add(rim);
+    // Raised center rail separates the rival mats without obstructing card slots.
+    const divider=new THREE.Group();
+    divider.position.set(0,.045,0);
+    const railBase=new THREE.Mesh(
+      new THREE.BoxGeometry(4.95,.075,.18),
+      new THREE.MeshStandardMaterial({color:0x102c3a,roughness:.32,metalness:.72})
+    );
+    divider.add(railBase);
+    const railGold=new THREE.Mesh(
+      new THREE.BoxGeometry(4.72,.018,.035),
+      new THREE.MeshStandardMaterial({color:0xffd45f,emissive:0x8a5617,emissiveIntensity:.55,metalness:.65,roughness:.3})
+    );
+    railGold.position.set(0,.048,-.052);divider.add(railGold);
+    const railAqua=new THREE.Mesh(
+      new THREE.BoxGeometry(4.72,.018,.035),
+      new THREE.MeshStandardMaterial({color:0x63e7df,emissive:0x126e78,emissiveIntensity:.6,metalness:.55,roughness:.3})
+    );
+    railAqua.position.set(0,.048,.052);divider.add(railAqua);
+    const crest=new THREE.Mesh(
+      new THREE.CylinderGeometry(.245,.245,.075,40),
+      new THREE.MeshStandardMaterial({color:0x252342,metalness:.72,roughness:.28})
+    );
+    crest.position.y=.065;divider.add(crest);
+    const crestRing=new THREE.Mesh(
+      new THREE.TorusGeometry(.205,.018,8,40),
+      new THREE.MeshStandardMaterial({color:0xffd45f,emissive:0x8a5617,emissiveIntensity:.5,metalness:.7,roughness:.25})
+    );
+    crestRing.rotation.x=Math.PI/2;crestRing.position.y=.108;divider.add(crestRing);
+    const emblem=document.createElement("canvas");emblem.width=128;emblem.height=128;
+    const ec=emblem.getContext("2d");ec.clearRect(0,0,128,128);ec.fillStyle="#fff4c5";
+    ec.font="900 48px Nunito, sans-serif";ec.textAlign="center";ec.textBaseline="middle";ec.fillText("VS",64,66);
+    const emblemTexture=new THREE.CanvasTexture(emblem);
+    const emblemMesh=new THREE.Mesh(new THREE.PlaneGeometry(.31,.31),new THREE.MeshBasicMaterial({map:emblemTexture,transparent:true,depthWrite:false}));
+    emblemMesh.rotation.x=-Math.PI/2;emblemMesh.position.y=.11;divider.add(emblemMesh);
+    scene.add(divider);
     const resize=()=>{if(!alive)return;const w=Math.max(host.clientWidth,1),h=Math.max(host.clientHeight,1);camera.aspect=w/h;camera.fov=w/h<.85?48:43;camera.position.z=w/h<.85?9.4:8.4;camera.updateProjectionMatrix();renderer.setSize(w,h,false)};
     if(typeof ResizeObserver!=="undefined"){observer=new ResizeObserver(resize);observer.observe(host)}else window.addEventListener("resize",resize);
     resize();
