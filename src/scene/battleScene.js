@@ -6,11 +6,11 @@ export function mountBattleScene(host){
   let renderer,scene,camera,observer,raf=0,alive=true;
   const live=new Map(),motions=[];
   const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches||false;
-  const cardW=.92,cardL=1.28;
+  const cardW=1.38,cardL=1.85;
   try{
     scene=new THREE.Scene();
     camera=new THREE.PerspectiveCamera(43,1,.1,50);
-    camera.position.set(0,8.2,8.8);camera.lookAt(0,0,0);
+    camera.position.set(0,7.2,7.5);camera.lookAt(0,0,0);
     renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:"low-power"});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
     renderer.setClearColor(0x000000,0);
@@ -20,7 +20,7 @@ export function mountBattleScene(host){
     scene.add(new THREE.HemisphereLight(0xffffff,0x26364d,2));
     const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-3,8,5);scene.add(key);
     const rim=new THREE.PointLight(0x63e7df,1.1,12);rim.position.set(0,3,-3);scene.add(rim);
-    const resize=()=>{if(!alive)return;const w=Math.max(host.clientWidth,1),h=Math.max(host.clientHeight,1);camera.aspect=w/h;camera.fov=w/h<.85?48:43;camera.position.z=w/h<.85?10:8.8;camera.updateProjectionMatrix();renderer.setSize(w,h,false)};
+    const resize=()=>{if(!alive)return;const w=Math.max(host.clientWidth,1),h=Math.max(host.clientHeight,1);camera.aspect=w/h;camera.fov=w/h<.85?48:43;camera.position.z=w/h<.85?8.5:7.5;camera.updateProjectionMatrix();renderer.setSize(w,h,false)};
     if(typeof ResizeObserver!=="undefined"){observer=new ResizeObserver(resize);observer.observe(host)}else window.addEventListener("resize",resize);
     resize();
     const makeTexture=(card)=>{
