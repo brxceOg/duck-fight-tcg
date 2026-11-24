@@ -48,6 +48,40 @@ export function mountBattleScene(host){
     };
     const playerMat=createCardMat("player");
     const enemyMat=createCardMat("enemy");
+    // Compact 3D pawn emblems mark the head of each player's mat.
+    const createPawn=(side)=>{
+      const isPlayer=side==="player";
+      const pawn=new THREE.Group();
+      pawn.position.set(0,.005,isPlayer?4.04:-4.04);
+      const metal=new THREE.MeshStandardMaterial({
+        color:isPlayer?0xe5bd69:0xb8a9e8,
+        metalness:.78,roughness:.24,
+        emissive:isPlayer?0x50300b:0x30204f,emissiveIntensity:.2
+      });
+      const dark=new THREE.MeshStandardMaterial({color:isPlayer?0x263b43:0x302a49,metalness:.72,roughness:.3});
+      const foot=new THREE.Mesh(new THREE.CylinderGeometry(.265,.29,.075,32),dark);
+      foot.position.y=.045;pawn.add(foot);
+      const profile=[
+        new THREE.Vector2(0,0),new THREE.Vector2(.19,0.025),
+        new THREE.Vector2(.245,.075),new THREE.Vector2(.235,.12),
+        new THREE.Vector2(.16,.17),new THREE.Vector2(.115,.27),
+        new THREE.Vector2(.105,.39),new THREE.Vector2(.17,.49),
+        new THREE.Vector2(.19,.55),new THREE.Vector2(.15,.59),
+        new THREE.Vector2(0,.59)
+      ];
+      const body=new THREE.Mesh(new THREE.LatheGeometry(profile,32),metal);
+      body.position.y=.085;pawn.add(body);
+      const collar=new THREE.Mesh(new THREE.TorusGeometry(.125,.025,8,28),dark);
+      collar.rotation.x=Math.PI/2;collar.position.y=.39;pawn.add(collar);
+      const head=new THREE.Mesh(new THREE.SphereGeometry(.19,28,20),metal);
+      head.position.y=.76;pawn.add(head);
+      const crown=new THREE.Mesh(new THREE.SphereGeometry(.045,16,12),dark);
+      crown.position.y=.925;pawn.add(crown);
+      scene.add(pawn);
+      return pawn;
+    };
+    const playerPawn=createPawn("player");
+    const enemyPawn=createPawn("enemy");
     // Raised center rail separates the rival mats without obstructing card slots.
     const divider=new THREE.Group();
     divider.position.set(0,.045,0);
@@ -100,7 +134,7 @@ export function mountBattleScene(host){
       ctx.font="bold 30px sans-serif";ctx.fillText("⚔ "+(card?.attack||1)+"    ♥ "+(card?.health||1),256,630);
       const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;return tex;
     };
-    const positionFor=(side,index)=>({x:((index%3)-1)*1.42,z:(side==="player"?1:-1)*(1.65+Math.floor(index/3)*1.7)});
+    const positionFor=(side,index)=>({x:((index%3)-1)*1.42,z:(side==="player"?1:-1)*(1.2+Math.floor(index/3)*1.55)});
     const slotGeometry=new THREE.PlaneGeometry(1.28,1.68);
     const slotFill=new THREE.MeshBasicMaterial({color:0xb8fff4,transparent:true,opacity:.075,depthWrite:false,side:THREE.DoubleSide});
     const slotLine=new THREE.LineBasicMaterial({color:0xc8fff8,transparent:true,opacity:.24,depthWrite:false});
