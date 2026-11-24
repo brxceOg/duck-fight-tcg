@@ -125,3 +125,10 @@ body:has(#battle.active) #view{position:fixed;inset:0;width:100%;height:100dvh;o
 /* Direct touch picking: visible Three.js card meshes own battle hit testing. */
 #battle .arena .battle-3d-canvas{z-index:7;pointer-events:auto;touch-action:none;cursor:pointer}
 #battle .arena .board{pointer-events:none}
+
+/* Selected-duck ability control, placed directly above the hand inventory. */
+#battle .ability-panel{display:flex;justify-content:center;padding:0 0 6px}
+#battle .ability-button{width:100%;min-height:38px;border:1px solid #c9a4ff;border-radius:11px;background:linear-gradient(100deg,#6439a6,#9b59db);color:#fff;font-weight:1000;font-size:11px;letter-spacing:.08em;box-shadow:0 0 16px #9d62ff55}
+#battle .ability-button:disabled{opacity:.48;filter:saturate(.5)}
+#battle .ability-button.targeting{background:linear-gradient(100deg,#a02f59,#ef5279);border-color:#ff9aaa;box-shadow:0 0 18px #ff456b88;animation:abilityPulse .8s ease-in-out infinite alternate}
+@keyframes abilityPulse{to{filter:brightness(1.3);box-shadow:0 0 25px #ff456b}}
