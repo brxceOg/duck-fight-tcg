@@ -261,18 +261,51 @@ export function mountBattleScene(host){
         }else if(type==="hook"){
           const attacker=[...live.values()].find(a=>a.side==="player"&&a.index===attackerIndex);if(!attacker)return;
           const from=attacker.mesh.position.clone(),to=origin.clone().add(new THREE.Vector3(0,.12,.62));
-          // The red forearm pivots above the target; the silver hook is its leading tip.
+          // Foxy's oversized red forearm pivots at the shoulder. The metal hook is
+          // built at the far end so its pointed tip, never the elbow, is the contact point.
           const arm=new THREE.Group();
-          const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.115,.15,.48,12),new THREE.MeshStandardMaterial({color:0xd92732,roughness:.52}));
-          sleeve.rotation.z=Math.PI/2;sleeve.position.x=.22;arm.add(sleeve);
-          const fist=new THREE.Mesh(new THREE.SphereGeometry(.145,16,12),new THREE.MeshStandardMaterial({color:0xc91f2b,roughness:.72}));
-          fist.position.set(.43,0,0);arm.add(fist);
-          const hookHand=new THREE.Group();hookHand.position.set(.49,-.015,0);
-          const hookMetal=new THREE.Mesh(new THREE.TorusGeometry(.135,.045,8,24,Math.PI*1.5),new THREE.MeshStandardMaterial({color:0xd7dbe3,metalness:.85,roughness:.2,emissive:0x344455,emissiveIntensity:.5}));
-          hookMetal.rotation.set(0,0,-.6);hookHand.add(hookMetal);
-          const hookKnuckle=new THREE.Mesh(new THREE.SphereGeometry(.075,12,10),new THREE.MeshStandardMaterial({color:0xd7dbe3,metalness:.8,roughness:.25}));hookKnuckle.position.set(-.025,-.105,0);hookHand.add(hookKnuckle);
+          const redArm=new THREE.Mesh(
+            new THREE.CylinderGeometry(.125,.16,.78,16),
+            new THREE.MeshStandardMaterial({color:0xf0182d,roughness:.46,metalness:.06,emissive:0x51000a,emissiveIntensity:.16})
+          );
+          redArm.rotation.z=Math.PI/2;redArm.position.x=.39;arm.add(redArm);
+          const shoulder=new THREE.Mesh(
+            new THREE.SphereGeometry(.17,18,14),
+            new THREE.MeshStandardMaterial({color:0xe9162b,roughness:.48})
+          );
+          arm.add(shoulder);
+          const redFist=new THREE.Mesh(
+            new THREE.SphereGeometry(.16,18,14),
+            new THREE.MeshStandardMaterial({color:0xf0182d,roughness:.42})
+          );
+          redFist.position.set(.78,0,0);arm.add(redFist);
+          const hookHand=new THREE.Group();hookHand.position.set(.78,0,0);
+          const hookCurve=new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0,0,0),new THREE.Vector3(.12,-.025,0),
+            new THREE.Vector3(.19,-.09,0),new THREE.Vector3(.18,-.17,0),
+            new THREE.Vector3(.11,-.23,0),new THREE.Vector3(.05,-.22,0)
+          ]);
+          const hookMetal=new THREE.Mesh(
+            new THREE.TubeGeometry(hookCurve,28,.047,10,false),
+            new THREE.MeshStandardMaterial({color:0xe2e6ed,metalness:.88,roughness:.18,emissive:0x303d50,emissiveIntensity:.35})
+          );
+          hookHand.add(hookMetal);
+          const hookPoint=new THREE.Mesh(
+            new THREE.ConeGeometry(.058,.18,14),
+            new THREE.MeshStandardMaterial({color:0xf0f2f6,metalness:.9,roughness:.16})
+          );
+          hookPoint.position.set(.05,-.22,0);hookPoint.rotation.z=-Math.PI/2;hookHand.add(hookPoint);
+          const redCuff=new THREE.Mesh(
+            new THREE.TorusGeometry(.125,.045,8,24),
+            new THREE.MeshStandardMaterial({color:0xc90f25,roughness:.4})
+          );
+          redCuff.position.x=-.015;redCuff.rotation.y=Math.PI/2;hookHand.add(redCuff);
           arm.add(hookHand);scene.add(arm);
-          const impact=new THREE.Mesh(new THREE.TorusGeometry(.38,.045,8,40),new THREE.MeshBasicMaterial({color:0xffd45f,transparent:true,opacity:0,depthTest:false}));impact.rotation.x=Math.PI/2;impact.position.copy(origin);impact.position.y=.2;scene.add(impact);
+          const impact=new THREE.Mesh(
+            new THREE.TorusGeometry(.38,.045,8,40),
+            new THREE.MeshBasicMaterial({color:0xffd45f,transparent:true,opacity:0,depthTest:false})
+          );
+          impact.rotation.x=Math.PI/2;impact.position.set(to.x,.16,to.z);scene.add(impact);
           motions.push({kind:"foxy",attacker:attacker.mesh,arm,impact,from,to,fromTime:performance.now(),duration:reduced?1:1050});
         }
       },
@@ -333,11 +366,17 @@ export function mountBattleScene(host){
           if(p>.54)a.attacker.position.lerpVectors(a.to,a.from,outEase);
           a.attacker.position.y=.11+Math.sin(Math.min(1,p/.54)*Math.PI)*.48-(slam*.16);
           a.attacker.rotation.z=Math.sin(p*Math.PI)*-.12;
-          a.arm.position.set(a.to.x-.49,a.to.y+.78, a.to.z);
-          // Rotate around the shoulder so the hook at the far end, not the rear of the sleeve, strikes the card.
-          a.arm.rotation.z=.08-slam*1.18;
-          a.arm.scale.setScalar(1+slam*.04);
-          a.impact.material.opacity=slam*(1-slam)*2.2;a.impact.scale.setScalar(.7+slam*1.8);
+          // Keep the shoulder above the target and swing the hook end downward.
+          // At full extension the pointed hook tip reaches the card's top surface.
+          a.arm.position.set(a.to.x,a.to.y+.9,a.to.z);
+          a.arm.rotation.z=-.12-slam*1.4;
+          a.arm.scale.setScalar(1+slam*.035);
+          const hookContact=new THREE.Vector3(.83,-.22,0)
+            .applyAxisAngle(new THREE.Vector3(0,0,1),a.arm.rotation.z)
+            .add(a.arm.position);
+          a.impact.position.set(hookContact.x,.16,a.to.z);
+          a.impact.material.opacity=slam*(1-slam)*2.2;
+          a.impact.scale.setScalar(.7+slam*1.8);
           if(p>=1){a.attacker.position.copy(a.from);a.attacker.position.y=.11;a.attacker.rotation.z=0;scene.remove(a.arm,a.impact);a.arm.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}});a.impact.geometry.dispose();a.impact.material.dispose();motions.splice(i,1)}
         }else if(a.kind==="slash"){
           if(now<a.fromTime)continue;
