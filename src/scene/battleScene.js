@@ -70,6 +70,9 @@ export function mountBattleScene(host){
           });
         }
       },
+      selectUnit(index=null){
+        for(const [unit,a] of live){const edge=a.mesh.material[0];edge.emissive.setHex(a.side==="player"&&a.index===index?0x2ccfc7:0x000000);edge.emissiveIntensity=a.side==="player"&&a.index===index?1.15:0;}
+      },
       attack(side="player",index=0,targetIndex=0){
         const board=[...live.entries()].filter(([,a])=>a.side===side).sort((x,y)=>x[1].index-y[1].index);
         const targetBoard=[...live.entries()].filter(([,a])=>a.side!==(side)).sort((x,y)=>x[1].index-y[1].index);
