@@ -1,7 +1,7 @@
 import{getState,spend,win}from"./state/playerState.js";
 import{initShop}from"./ui/shopUI.js";
 import{initDeckBuilder,renderCollection}from"./ui/deckBuilder.js";
-import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js";
+import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=duckabilities2";
 window.duckSpend=spend;
 const $=s=>document.querySelector(s);
 let game=null,battleStarted=false,paidWin=false,selectedUnit=null,abilityTargeting=false,battle3d=null,battle3dLoading=false;const pending3d=[];
