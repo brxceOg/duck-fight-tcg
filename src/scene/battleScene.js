@@ -20,6 +20,28 @@ export function mountBattleScene(host){
     scene.add(new THREE.HemisphereLight(0xffffff,0x26364d,2));
     const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-3,8,5);scene.add(key);
     const rim=new THREE.PointLight(0x63e7df,1.1,12);rim.position.set(0,3,-3);scene.add(rim);
+    // Player cosmetic mat: sized beyond the complete 3-column x 2-row card-slot footprint.
+    // Keep this as a self-contained group so future owned mats can swap its materials/texture.
+    const playerMat=new THREE.Group();
+    playerMat.position.set(0,0,2.5);
+    const matBase=new THREE.Mesh(
+      new THREE.BoxGeometry(4.05,.065,3.82),
+      new THREE.MeshStandardMaterial({color:0x102936,roughness:.78,metalness:.18})
+    );
+    matBase.position.y=-.0375;playerMat.add(matBase);
+    const matTop=new THREE.Mesh(
+      new THREE.PlaneGeometry(3.96,3.73),
+      new THREE.MeshStandardMaterial({color:0x183b48,roughness:.92,metalness:.04})
+    );
+    matTop.rotation.x=-Math.PI/2;matTop.position.y=-.003;playerMat.add(matTop);
+    const matTrimMaterial=new THREE.MeshStandardMaterial({color:0xd6aa52,roughness:.38,metalness:.68,emissive:0x38200a,emissiveIntensity:.16});
+    const matTrim=new THREE.Group();
+    const trimLong=new THREE.BoxGeometry(3.94,.018,.035);
+    const trimShort=new THREE.BoxGeometry(.035,.018,3.72);
+    for(const z of [-1.86,1.86]){const edge=new THREE.Mesh(trimLong,matTrimMaterial);edge.position.set(0,.012,z);matTrim.add(edge)}
+    for(const x of [-1.97,1.97]){const edge=new THREE.Mesh(trimShort,matTrimMaterial);edge.position.set(x,.012,0);matTrim.add(edge)}
+    playerMat.add(matTrim);
+    scene.add(playerMat);
     // Raised center rail separates the rival mats without obstructing card slots.
     const divider=new THREE.Group();
     divider.position.set(0,.045,0);
