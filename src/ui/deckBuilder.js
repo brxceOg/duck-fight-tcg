@@ -8,7 +8,7 @@ export function renderCollection(filter="all"){
  collectible.filter(c=>(filter==="all"||c.set===filter)&&(s.collection[c.id]||0)>0).forEach(c=>{
   let el=document.createElement("div");el.className="collection-card";
   const art=c.front||placeholder(c);
-  el.innerHTML='<span class="qty">×'+s.collection[c.id]+'</span><img src="'+art+'" alt="'+c.name+'"><div class="meta"><b>'+c.name+'</b><small>'+c.rarity+" · "+c.cost+' bubbles</small><small>'+c.set+'</small><button class="link add">+ Add to deck</button></div>';
+  el.innerHTML='<span class="qty">×'+s.collection[c.id]+'</span><img src="'+art+'" alt="'+c.name+'"><div class="meta"><b>'+c.name+'</b><small>'+c.rarity+" · "+c.cost+' bubbles</small><small>'+c.set+'</small><button class="link add" '+(s.deck.includes(c.id)?'disabled':'')+'>'+(s.deck.includes(c.id)?'✓ In deck':'+ Add to deck')+'</button></div>';
   el.querySelector("img").onclick=()=>{document.querySelector("#inspect-card").innerHTML='<img src="'+art+'" alt="'+c.name+'">';document.querySelector("#inspect").classList.remove("hidden")};
   el.querySelector(".add").onclick=()=>{addToDeck(c.id);renderCollection(filter)};grid.append(el)
  });
