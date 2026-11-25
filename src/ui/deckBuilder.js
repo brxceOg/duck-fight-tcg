@@ -27,7 +27,7 @@ export function renderCollection(filter=activeFilter){
   if(inDeck){
    const selected=document.createElement("div");selected.className="deck-selected-state";selected.innerHTML='<span>✓</span> Selected';meta.append(selected);
    const badge=document.createElement("span");badge.className="in-deck-indicator";badge.setAttribute("aria-label","In deck");badge.innerHTML="<span>✓</span>";
-   const wash=document.createElement("span");wash.className="deck-art-wash";wash.setAttribute("aria-hidden","true");el.append(badge,wash);
+   el.append(badge);
   }else{
    const add=document.createElement("button");add.type="button";add.className="link add";add.textContent="+ Add to deck";
    add.addEventListener("click",()=>{if(addToDeck(card.id))renderCollection(activeFilter)});
