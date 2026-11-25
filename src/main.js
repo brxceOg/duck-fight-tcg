@@ -1,6 +1,6 @@
 import{getState,spend,win}from"./state/playerState.js";
 import{initShop}from"./ui/shopUI.js";
-import{initDeckBuilder,renderCollection}from"./ui/deckBuilder.js";
+import{initDeckBuilder,renderCollection}from"./ui/deckBuilder.js?v=collectionfix1";
 import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=unique-hand2";
 window.duckSpend=spend;
 const $=s=>document.querySelector(s);
