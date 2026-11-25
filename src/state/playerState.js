@@ -18,7 +18,7 @@ export const getState=()=>structuredClone(s);
 export function spend(n){if(s.soap<n)return false;s.soap-=n;save();return true}
 export function addSoap(n){s.soap+=n;save()}
 export function addCards(a){a.forEach(c=>s.collection[c.id]=(s.collection[c.id]||0)+1);s.packs++;save()}
-export function addToDeck(id){if(CARDS.find(c=>c.id===id)?.cardType==="Minion")return false;let n=s.collection[id]||0;if(!n||s.deck.length>=STARTER_IDS.length||s.deck.filter(x=>x===id).length>=n)return false;s.deck.push(id);save();return true}
+export function addToDeck(id){if(CARDS.find(c=>c.id===id)?.cardType==="Minion")return false;let n=s.collection[id]||0;if(!n||s.deck.includes(id)||s.deck.length>=STARTER_IDS.length)return false;s.deck.push(id);save();return true}
 export function removeFromDeck(id){let i=s.deck.indexOf(id);if(i>=0){s.deck.splice(i,1);save()}}
 export function clearDeck(){s.deck=[];save()}
 export function win(){s.wins++;addSoap(60)}
