@@ -5,7 +5,7 @@ import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}fr
 window.duckSpend=spend;
 const $=s=>document.querySelector(s);
 let game=null,battleStarted=false,paidWin=false,selectedUnit=null,abilityTargeting=false,battle3d=null,battle3dLoading=false;const pending3d=[];
-function refresh(){const s=getState();$("#soap").textContent=s.soap;$("#owned-count").textContent=Object.values(s.collection).reduce((a,b)=>a+b,0);$("#win-count").textContent=s.wins;$("#pack-count").textContent=s.packs;renderCollection(document.querySelector(".filter.active")?.dataset.filter||"all")}
+function refresh(event){const s=getState();$("#soap").textContent=s.soap;$("#owned-count").textContent=Object.values(s.collection).reduce((a,b)=>a+b,0);$("#win-count").textContent=s.wins;$("#pack-count").textContent=s.packs;if(event?.detail?.change==="collection")renderCollection()}
 function showBattleError(err){const el=$("#battle-message");if(el)el.textContent="Battle couldn't start: "+(err?.message||String(err));console.error("Duck Fight battle error",err)}
 function go(n){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===n));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.go===n));const view=$("#view");view.scrollTop=0;if(n==="battle"&&!battleStarted){try{startBattle()}catch(err){battleStarted=false;showBattleError(err)}}}
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();go(b.dataset.go)}));
