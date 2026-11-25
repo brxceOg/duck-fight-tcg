@@ -7,7 +7,7 @@ export function renderCollection(filter="all"){
  filters.querySelectorAll(".filter").forEach(b=>b.onclick=()=>renderCollection(b.dataset.filter));
  collectible.filter(c=>(filter==="all"||c.set===filter)&&(s.collection[c.id]||0)>0).forEach(c=>{
   const inDeck=s.deck.includes(c.id);let el=document.createElement("div");el.className="collection-card"+(inDeck?" is-in-deck":"");const art=c.front||placeholder(c);
-  el.innerHTML=(inDeck?'<span class="in-deck-indicator" aria-label="In deck"><span>✓</span></span><span class="deck-art-wash" aria-hidden="true"></span>':'')+'<span class="qty">×'+s.collection[c.id]+'</span><img src="'+art+'" alt="'+c.name+'"><div class="meta"><b>'+c.name+'</b><small>'+c.rarity+" · "+c.cost+' bubbles</small><small>'+c.set+'</small><button class="link add" '+(inDeck?'disabled':'')+'>'+(inDeck?'✓ Added to deck':'+ Add to deck')+'</button></div>';
+  el.innerHTML=(inDeck?'<span class="in-deck-indicator" aria-label="In deck"><span>✓</span></span><span class="deck-art-wash" aria-hidden="true"></span>':'')+'<span class="qty">×'+s.collection[c.id]+'</span><img src="'+art+'" alt="'+c.name+'"><div class="meta"><b>'+c.name+'</b><small>'+c.rarity+" · "+c.cost+' bubbles</small><small>'+c.set+'</small>'+(inDeck?'<div class="deck-selected-state"><span>✓</span> Selected</div>':'<button class="link add">+ Add to deck</button>')+'</div>';
   el.querySelector("img").onclick=()=>{document.querySelector("#inspect-card").innerHTML='<img src="'+art+'" alt="'+c.name+'">';document.querySelector("#inspect").classList.remove("hidden")};
   el.querySelector(".add").onclick=()=>{if(addToDeck(c.id))renderCollection(filter)};grid.append(el)
  });
