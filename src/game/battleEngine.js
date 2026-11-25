@@ -23,15 +23,16 @@ const closestOpenSlot=(board,anchorSlot)=>{
 export function createBattle(ids){
  const valid=(Array.isArray(ids)?ids:[]).filter(id=>{const c=cardById(id);return c&&c.cardType!=="Minion"});
  const d=valid.length?valid:BOOSTER_CARDS.filter(c=>c.cost<=3).map(c=>c.id);
- const openingHand=shuffle([...d,...d]).slice(0,4);
- return{player:{hp:5,maxB:1,b:1,board:[],hand:openingHand},enemy:{hp:5,maxB:1,b:1,board:[],hand:shuffle([...BOOSTER_CARDS,...BOOSTER_CARDS].map(c=>c.id)).slice(0,4),deck:[]},turn:1,over:false,deathNoteUsed:false,nanamiSummonUsed:false,log:"Your turn. Play a duck!"}
+ const uniqueDeck=[...new Set(d)];
+ const openingHand=shuffle([...uniqueDeck]).slice(0,4);
+ return{player:{hp:5,maxB:1,b:1,board:[],hand:openingHand},enemy:{hp:5,maxB:1,b:1,board:[],hand:shuffle([...new Set(BOOSTER_CARDS.map(c=>c.id))]).slice(0,4),deck:[]},turn:1,over:false,deathNoteUsed:false,nanamiSummonUsed:false,log:"Your turn. Play a duck!"}
 }
 export function playCard(g,side,i){
  let p=g[side],c=cardById(p.hand[i]);
  if(g.over||!c||c.cardType==="Minion"||p.b<c.cost||p.board.length>=6)return false;
  p.b-=c.cost;p.hand.splice(i,1);
  p.board.push(newUnit(c,side,{slot:firstOpenSlot(p.board)}));
- if(c.id==="library-mage")p.hand.push(shuffle(BOOSTER_CARDS.map(x=>x.id))[0]);
+ if(c.id==="library-mage"){const unavailable=new Set([...p.hand,...p.board.map(x=>x.id)]);const draws=shuffle(BOOSTER_CARDS.map(x=>x.id).filter(id=>!unavailable.has(id)));if(draws.length)p.hand.push(draws[0])}
  g.log=c.name+" joins the flock!";return true
 }
 export function attack(g,side,i,t=0){
