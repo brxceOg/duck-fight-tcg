@@ -1,7 +1,7 @@
 import{getState,spend,win}from"./state/playerState.js";
 import{initShop}from"./ui/shopUI.js";
 import{initDeckBuilder,renderCollection}from"./ui/deckBuilder.js";
-import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=duckabilities2";
+import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=ducknewcards1";
 window.duckSpend=spend;
 const $=s=>document.querySelector(s);
 let game=null,battleStarted=false,paidWin=false,selectedUnit=null,abilityTargeting=false,battle3d=null,battle3dLoading=false;const pending3d=[];
@@ -11,16 +11,19 @@ function go(n){document.querySelectorAll(".screen").forEach(x=>x.classList.toggl
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();go(b.dataset.go)}));
 window.addEventListener("playerstate",refresh);
 initShop({onState:refresh});initDeckBuilder();refresh();
-async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=foxyhookimpact3");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){battle3d.setCardTapHandler(handleCardTap);while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
+async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=ducknewcards1");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){battle3d.setCardTapHandler(handleCardTap);while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
 function animate3d(method,...args){if(battle3d){battle3d[method](...args);return}if(battle3dLoading)pending3d.push([method,...args])}
 function startBattle(){ensureBattle3D();const saved=getState();const validDeck=(Array.isArray(saved.deck)?saved.deck:[]).filter(id=>cardById(id));game=createBattle(validDeck);battleStarted=true;paidWin=false;selectedUnit=null;abilityTargeting=false;drawBattle()}
 function handleCardTap(side,index){
  if(!game||game.over||!Number.isInteger(index))return;
- if(side==="enemy"&&abilityTargeting&&selectedUnit!==null){
-  const result=useAbility(game,"player",selectedUnit,index);
-  abilityTargeting=false;
-  if(result.ok){animate3d("ability",result.animation,index,selectedUnit);drawBattle()}
-  else{$("#battle-message").textContent="That duck cannot be targeted.";drawBattle()}
+ if(abilityTargeting&&selectedUnit!==null){
+  const chosen=game.player.board[selectedUnit],mode=chosen?.abilityKey==="potion"?"player":"enemy";
+  if(side===mode){
+   const result=useAbility(game,"player",selectedUnit,index);
+   abilityTargeting=false;
+   if(result.ok){animate3d("ability",result.animation,result.targetIndex??index,selectedUnit);drawBattle()}
+   else{$("#battle-message").textContent="That duck cannot be targeted.";drawBattle()}
+  }
   return;
  }
  if(side==="player"){
@@ -62,7 +65,19 @@ function drawBattle(){
  hand.querySelectorAll("[data-hand]").forEach(b=>b.addEventListener("click",()=>{const card=cardById(game.player.hand[Number(b.dataset.hand)]);if(playCard(game,"player",Number(b.dataset.hand))){selectedUnit=null;drawBattle()}}));
  if(game.over){abilityPanel.classList.add("hidden");$("#end-turn").textContent="MATCH OVER";$("#end-turn").disabled=true;if(game.enemy.hp<=0&&!paidWin){paidWin=true;win();refresh()}}else{$("#end-turn").textContent="END TURN →";$("#end-turn").disabled=false}
 }
-$("#ability-button").addEventListener("click",()=>{if(selectedUnit===null||!canUseAbility(game,"player",selectedUnit))return;abilityTargeting=true;$("#battle-message").textContent="Choose an enemy duck to target with this ability.";drawBattle();abilityTargeting=true;$("#ability-button").disabled=true;$("#ability-button").textContent="TAP AN ENEMY DUCK…";$("#ability-button").classList.add("targeting")});
+$("#ability-button").addEventListener("click",()=>{
+ if(selectedUnit===null||!canUseAbility(game,"player",selectedUnit))return;
+ const key=game.player.board[selectedUnit]?.abilityKey;
+ const targetMode=["hook","telekinesis","death-note","slash","sword-leap","kamehameha","potion"].includes(key);
+ if(targetMode){
+  abilityTargeting=true;
+  $("#battle-message").textContent=key==="potion"?"Choose one of your ducks to cleanse and heal.":"Choose an enemy duck to target.";
+  drawBattle();abilityTargeting=true;$("#ability-button").disabled=true;$("#ability-button").textContent=key==="potion"?"TAP AN ALLY DUCK…":"TAP AN ENEMY DUCK…";$("#ability-button").classList.add("targeting");
+ }else{
+  const result=useAbility(game,"player",selectedUnit);
+  if(result.ok){animate3d("ability",result.animation,result.targetIndex,selectedUnit);drawBattle()}
+ }
+});
 function restartBattle(){battleStarted=false;startBattle();$("#end-turn").disabled=false}
 $("#new-match").addEventListener("click",()=>{try{restartBattle()}catch(err){showBattleError(err)}});
 $("#end-turn").addEventListener("click",()=>{try{if(!game||game.over)return;selectedUnit=null;abilityTargeting=false;endTurn(game);drawBattle()}catch(err){showBattleError(err)}});
