@@ -1,14 +1,14 @@
 import{getState,spend,win}from"./state/playerState.js";
 import{initShop}from"./ui/shopUI.js";
-import{initDeckBuilder,renderCollection}from"./ui/deckBuilder.js?v=selectionclean2";
+import{initDeckBuilder,renderCollection,renderDeckBuilder}from"./ui/deckBuilder.js?v=tcg-redesign1";
 import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=unique-hand2";
 window.duckSpend=spend;
 const $=s=>document.querySelector(s);
 let game=null,battleStarted=false,paidWin=false,selectedUnit=null,abilityTargeting=false,battle3d=null,battle3dLoading=false;const pending3d=[];
-function refresh(event){const s=getState();$("#soap").textContent=s.soap;$("#owned-count").textContent=Object.values(s.collection).reduce((a,b)=>a+b,0);$("#win-count").textContent=s.wins;$("#pack-count").textContent=s.packs;if(event?.detail?.change==="collection")renderCollection()}
+function refresh(event){const s=getState(),owned=Object.values(s.collection).reduce((a,b)=>a+b,0);$("#soap").textContent=s.soap;$("#owned-count").textContent=owned;$("#win-count").textContent=s.wins;$("#pack-count").textContent=s.packs;$("#profile-soap").textContent=s.soap+" 🫧";$("#profile-wins").textContent=s.wins;$("#profile-owned").textContent=owned;$("#profile-packs").textContent=s.packs;if(event?.detail?.change==="collection"||event?.detail?.change==="deck"){renderCollection();renderDeckBuilder()}}
 function showBattleError(err){const el=$("#battle-message");if(el)el.textContent="Battle couldn't start: "+(err?.message||String(err));console.error("Duck Fight battle error",err)}
-function go(n){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===n));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.go===n));const view=$("#view");view.scrollTop=0;if(n==="battle"&&!battleStarted){try{startBattle()}catch(err){battleStarted=false;showBattleError(err)}}}
-document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();go(b.dataset.go)}));
+function go(n){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===n));document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.go===n));const view=$("#view");view.scrollTop=0;if(n==="decks")renderDeckBuilder();if(n==="collection")renderCollection();if(n==="battle"&&!battleStarted){try{startBattle()}catch(err){battleStarted=false;showBattleError(err)}}}
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();go(b.dataset.go)}));$("#battle-exit").addEventListener("click",()=>go("home"));
 window.addEventListener("playerstate",refresh);
 initShop({onState:refresh});initDeckBuilder();refresh();
 async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=ducknewcards2");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){battle3d.setCardTapHandler(handleCardTap);while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
