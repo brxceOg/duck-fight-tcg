@@ -108,7 +108,7 @@ export function useAbility(g,side,index,targetIndex){
   if(v.hp<=0)o.board.splice(resolvedIndex,1);
   g.log="Goku unleashes a Kamehameha for 10 damage!";
  }else if(key==="dance"){
-  o.board.forEach(unit=>{unit.stunnedUntil=Math.max(unit.stunnedUntil||0,g.turn+3)});
+  o.board.forEach(unit=>{unit.stunnedUntil=Math.max(unit.stunnedUntil||0,g.turn+4)});
   u.abilityReadyAt=g.turn+1;
   animation={type:key,ownerSide:side,targetIndices:o.board.map((_,i)=>i)};
   g.log="Miku's song takes over the arena! Every enemy duck dances and cannot attack for 2 turns.";
