@@ -190,7 +190,7 @@ export function mountBattleScene(host){
       const back=new THREE.MeshStandardMaterial({map:cardBackTexture,roughness:.48,metalness:.04});
       // BoxGeometry material order: +X, -X, +Y (front), -Y (card back), +Z, -Z.
       const mesh=new THREE.Mesh(new THREE.BoxGeometry(cardW,.075,cardL),[edge,edge,face,back,edge,edge]);
-      const pos=positionFor(side,index);
+      const pos=positionFor(side,unit.slot??index);
       const isSummon=unit.cardType==="Minion"&&!!unit.summonedAtTurn;
       mesh.position.set(pos.x,isSummon?6.4:1.05,side==="player"?3.7:-3.7);
       mesh.rotation.set(isSummon?-.22:-Math.PI/2,side==="enemy"?Math.PI:0,side==="enemy"?-.12:.12);
@@ -523,8 +523,14 @@ export function mountBattleScene(host){
           if(p>=1){a.mesh.position.copy(a.from);motions.splice(i,1)}
         }
       }
+      const controlledMeshes=new Set();
+      for(const motion of motions){
+        if(motion.mesh)controlledMeshes.add(motion.mesh);
+        if(motion.attacker)controlledMeshes.add(motion.attacker);
+        if(motion.notes)motion.notes.forEach(note=>controlledMeshes.add(note.mesh));
+      }
       for(const a of live.values()){
-        if(a.kind!=="place"&&a.kind!=="lunge"&&a.kind!=="summon"&&a.kind!=="sword-leap"&&a.kind!=="dance"){
+        if(!controlledMeshes.has(a.mesh)&&a.kind!=="place"&&a.kind!=="summon"){
           const liftTarget=a.selected?.42:0;
           a.lift+=(liftTarget-a.lift)*.12;
           const bob=a.selected?Math.sin(now*.0027+a.index*.65)*.045:0;
