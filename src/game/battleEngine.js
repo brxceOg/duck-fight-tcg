@@ -80,7 +80,7 @@ export function useAbility(g,side,index,targetIndex){
   g.log="Tomoe descends from the sky and takes his place beside Nanami!";
   resolvedIndex=slotIndex;targetSide=side;
  }else if(key==="sword-leap"){
-  v.hp-=5;u.abilityReadyAt=g.turn+3;
+  v.hp-=5;u.abilityReadyAt=g.turn+4;
   if(v.hp<=0)o.board.splice(resolvedIndex,1);
   g.log="Finn leaps in with a sword strike for 5 damage!";
  }else if(key==="potion"){
@@ -93,7 +93,7 @@ export function useAbility(g,side,index,targetIndex){
   animation={type:key,ownerSide:side,targetIndices:p.board.map((_,i)=>i)};
   g.log="Tohru shares onigiri! Your flock heals 2 and gains +3 attack this turn.";
  }else if(key==="kamehameha"){
-  v.hp-=10;u.abilityReadyAt=g.turn+2;
+  v.hp-=10;u.abilityReadyAt=g.turn+3;
   if(v.hp<=0)o.board.splice(resolvedIndex,1);
   g.log="Goku unleashes a Kamehameha for 10 damage!";
  }else if(key==="dance"){
