@@ -6,15 +6,14 @@ export function renderCollection(filter="all"){
  filters.innerHTML='<button class="filter '+(filter==="all"?"active":"")+'" data-filter="all">All</button>'+sets.map(set=>'<button class="filter '+(filter===set?"active":"")+'" data-filter="'+set+'">'+set+'</button>').join("");
  filters.querySelectorAll(".filter").forEach(b=>b.onclick=()=>renderCollection(b.dataset.filter));
  collectible.filter(c=>(filter==="all"||c.set===filter)&&(s.collection[c.id]||0)>0).forEach(c=>{
-  let el=document.createElement("div");el.className="collection-card";
-  const art=c.front||placeholder(c);
-  el.innerHTML='<span class="qty">×'+s.collection[c.id]+'</span><img src="'+art+'" alt="'+c.name+'"><div class="meta"><b>'+c.name+'</b><small>'+c.rarity+" · "+c.cost+' bubbles</small><small>'+c.set+'</small><button class="link add" '+(s.deck.includes(c.id)?'disabled':'')+'>'+(s.deck.includes(c.id)?'✓ In deck':'+ Add to deck')+'</button></div>';
+  const inDeck=s.deck.includes(c.id);let el=document.createElement("div");el.className="collection-card"+(inDeck?" is-in-deck":"");const art=c.front||placeholder(c);
+  el.innerHTML=(inDeck?'<span class="in-deck-indicator"><span>✓</span> IN DECK</span>':'')+'<span class="qty">×'+s.collection[c.id]+'</span><img src="'+art+'" alt="'+c.name+'"><div class="meta"><b>'+c.name+'</b><small>'+c.rarity+" · "+c.cost+' bubbles</small><small>'+c.set+'</small><button class="link add" '+(inDeck?'disabled':'')+'>'+(inDeck?'✓ Added to deck':'+ Add to deck')+'</button></div>';
   el.querySelector("img").onclick=()=>{document.querySelector("#inspect-card").innerHTML='<img src="'+art+'" alt="'+c.name+'">';document.querySelector("#inspect").classList.remove("hidden")};
-  el.querySelector(".add").onclick=()=>{addToDeck(c.id);renderCollection(filter)};grid.append(el)
+  el.querySelector(".add").onclick=()=>{if(addToDeck(c.id))renderCollection(filter)};grid.append(el)
  });
- let d=s.deck.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);
- const deckLimit=collectible.length;
+ let d=s.deck.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);const deckLimit=collectible.length;
  document.querySelector("#deck-count").textContent=d.length+" / "+deckLimit+" cards";
- document.querySelector("#deck-list").innerHTML=d.map(c=>'<button class="deck-chip" data-id="'+c.id+'">'+c.name+" ✕</button>").join("");
+ const deckList=document.querySelector("#deck-list");deckList.innerHTML=d.map(c=>'<button type="button" class="deck-card-thumb" data-id="'+c.id+'" aria-label="Remove '+c.name+' from deck" title="Tap to remove '+c.name+'"><img src="'+(c.front||placeholder(c))+'" alt=""><span>✕</span></button>').join("");
+ deckList.querySelectorAll(".deck-card-thumb").forEach(b=>b.onclick=()=>{removeFromDeck(b.dataset.id);renderCollection(filter)});
 }
 export function initDeckBuilder(){document.querySelector("#clear-deck").onclick=()=>{clearDeck();renderCollection(document.querySelector(".filter.active")?.dataset.filter||"all")};document.querySelector("#inspect-close").onclick=()=>document.querySelector("#inspect").classList.add("hidden");renderCollection()}
