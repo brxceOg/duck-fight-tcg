@@ -145,3 +145,18 @@ body:has(#battle.active) #view{position:fixed;inset:0;width:100%;height:100dvh;o
 .deck-card-thumb span{position:absolute;top:3px;right:3px;display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#a92d55eF;border:1px solid #ffc2d3;color:white;font-size:12px;font-weight:1000;box-shadow:0 2px 5px #0008}
 .deck-card-thumb:active{transform:scale(.94)}
 @media(min-width:700px){.deck-card-thumb{flex-basis:72px;width:72px;height:98px}}
+
+/* Strong visual state for cards already selected into the deck. */
+.collection-card.is-in-deck{border:2px solid #54f2df;box-shadow:0 0 0 2px #54f2df55,0 0 18px #23d8c477;transform:translateY(-1px)}
+.collection-card.is-in-deck>img{filter:saturate(.78) brightness(.76)}
+.collection-card .in-deck-indicator{position:absolute;z-index:4;top:8px;left:8px;width:34px;height:34px;display:grid;place-items:center;padding:0;border-radius:50%;background:linear-gradient(145deg,#7dffe5,#08a58e);border:2px solid #e4fff9;color:#06483f;box-shadow:0 2px 10px #000b,0 0 12px #48f5d8;pointer-events:none}
+.collection-card .in-deck-indicator span{display:grid;place-items:center;width:100%;height:100%;font-size:22px;font-weight:1000;color:#06483f}
+.collection-card .deck-art-wash{position:absolute;z-index:2;inset:0 0 auto;height:calc(100% - 74px);background:linear-gradient(135deg,#32e6c522,#32e6c500 68%);border-bottom:2px solid #54f2df55;pointer-events:none}
+.collection-card .deck-selected-state{display:flex;align-items:center;gap:6px;margin-top:8px;padding:7px 9px;border:1px solid #54f2df99;border-radius:8px;background:#087d70;color:#eafffb;font-size:10px;font-weight:900;letter-spacing:.06em}
+.collection-card .deck-selected-state span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#dffff7;color:#087d70;font-size:12px}
+#deck-list.deck-list{display:flex;flex-wrap:nowrap;gap:9px;overflow-x:auto;overflow-y:hidden;min-height:94px;margin-top:10px;padding:5px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+#deck-list.deck-list::-webkit-scrollbar{display:none}
+#deck-list .deck-card-thumb{position:relative;display:block;flex:0 0 66px;width:66px;height:92px;min-width:66px;padding:0;border:2px solid #65f2df;border-radius:9px;background:#17152c;overflow:hidden;box-shadow:0 3px 10px #0008}
+#deck-list .deck-card-thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+#deck-list .deck-card-thumb span{position:absolute;top:3px;right:3px;display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#a92d55;border:1px solid #ffc2d3;color:#fff;font-size:12px;font-weight:1000;box-shadow:0 2px 5px #0009}
+@media(min-width:700px){#deck-list .deck-card-thumb{flex-basis:76px;width:76px;height:106px;min-width:76px}}
