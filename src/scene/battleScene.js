@@ -209,7 +209,7 @@ export function mountBattleScene(host){
             let a=live.get(unit);
             if(!a){createUnit(unit,side,index,board.length);a=live.get(unit)}
             a.side=side;a.index=index;a.mesh.userData.duckCard={side,index};
-            const p=positionFor(side,index);
+            const p=positionFor(side,unit.slot??index);
             a.targetX=p.x;a.targetZ=p.z;
             if(a.kind!=="place"){a.mesh.position.x=p.x;a.mesh.position.z=p.z}
           });
