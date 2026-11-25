@@ -23,9 +23,7 @@ const closestOpenSlot=(board,anchorSlot)=>{
 export function createBattle(ids){
  const valid=(Array.isArray(ids)?ids:[]).filter(id=>{const c=cardById(id);return c&&c.cardType!=="Minion"});
  const d=valid.length?valid:BOOSTER_CARDS.filter(c=>c.cost<=3).map(c=>c.id);
- if(!d.includes("miku-duck"))d.push("miku-duck");
  const openingHand=shuffle([...d,...d]).slice(0,4);
- if(!openingHand.includes("miku-duck"))openingHand[openingHand.length-1]="miku-duck";
  return{player:{hp:5,maxB:1,b:1,board:[],hand:openingHand},enemy:{hp:5,maxB:1,b:1,board:[],hand:shuffle([...BOOSTER_CARDS,...BOOSTER_CARDS].map(c=>c.id)).slice(0,4),deck:[]},turn:1,over:false,deathNoteUsed:false,nanamiSummonUsed:false,log:"Your turn. Play a duck!"}
 }
 export function playCard(g,side,i){
