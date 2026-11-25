@@ -11,7 +11,7 @@ function load(){
   // Temporary testing setup: every playable card is owned and included in the starter deck.
   // Preserve wallet/progression, but migrate existing saves to the same complete card pool.
   const savedDeck=Array.isArray(saved.deck)?saved.deck.filter((id,i,a)=>STARTER_IDS.includes(id)&&a.indexOf(id)===i):[...STARTER_IDS];
-  return{...base,...saved,collection:{...starterCollection(),...(saved.collection||{})},deck:savedDeck};
+  return{...base,...saved,collection:{...starterCollection(),...Object.fromEntries(Object.entries(saved.collection||{}).filter(([id])=>STARTER_IDS.includes(id)))},deck:savedDeck};
  }catch{return fresh()}
 }
 function save(change="general"){localStorage.setItem(KEY,JSON.stringify(s));window.dispatchEvent(new CustomEvent("playerstate",{detail:{change}}))}
