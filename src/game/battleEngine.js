@@ -31,7 +31,7 @@ export function playCard(g,side,i){
  let p=g[side],c=cardById(p.hand[i]);
  if(g.over||!c||c.cardType==="Minion"||p.b<c.cost||p.board.length>=6)return false;
  p.b-=c.cost;p.hand.splice(i,1);
- p.board.push(newUnit(c,side,{slot:firstOpenSlot(p.board)}));
+ p.board.push(newUnit(c,side,{slot:firstOpenSlot(p.board),summonedAtTurn:g.turn}));
  if(c.id==="library-mage"){const unavailable=new Set([...p.hand,...p.board.map(x=>x.id)]);const draws=shuffle(BOOSTER_CARDS.map(x=>x.id).filter(id=>!unavailable.has(id)));if(draws.length)p.hand.push(draws[0])}
  g.log=c.name+" joins the flock!";return true
 }
@@ -130,6 +130,6 @@ export function endTurn(g){
  const p=g.enemy;
  let choice=p.hand.map((id,i)=>({c:cardById(id),i})).filter(x=>x.c&&x.c.cardType!=="Minion"&&x.c.cost<=p.b&&p.board.length<6).sort((a,b)=>b.c.attack-a.c.attack)[0];
  if(choice)playCard(g,"enemy",choice.i);
- p.board.forEach((u,i)=>{if(!u.attacked&&g.turn>=(u.stunnedUntil||0))attack(g,"enemy",i,0)});
+ p.board.forEach((u,i)=>{if(!u.attacked&&g.turn>=(u.stunnedUntil||0)&&g.turn>(u.summonedAtTurn||0))attack(g,"enemy",i,0)});
  if(!g.over)g.log="Your turn. Make your move!";
 }
