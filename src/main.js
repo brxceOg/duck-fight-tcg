@@ -1,7 +1,7 @@
 import{getState,spend,win}from"./state/playerState.js";
 import{initShop}from"./ui/shopUI.js";
 import{initDeckBuilder,renderCollection}from"./ui/deckBuilder.js";
-import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=ducknewcards1";
+import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=ducknewcards2";
 window.duckSpend=spend;
 const $=s=>document.querySelector(s);
 let game=null,battleStarted=false,paidWin=false,selectedUnit=null,abilityTargeting=false,battle3d=null,battle3dLoading=false;const pending3d=[];
@@ -11,7 +11,7 @@ function go(n){document.querySelectorAll(".screen").forEach(x=>x.classList.toggl
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();go(b.dataset.go)}));
 window.addEventListener("playerstate",refresh);
 initShop({onState:refresh});initDeckBuilder();refresh();
-async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=ducknewcards1");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){battle3d.setCardTapHandler(handleCardTap);while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
+async function ensureBattle3D(){if(battle3d||battle3dLoading)return;battle3dLoading=true;try{const mod=await import("./scene/battleScene.js?v=ducknewcards2");battle3d=mod.mountBattleScene(document.querySelector(".arena"));if(battle3d){battle3d.setCardTapHandler(handleCardTap);while(pending3d.length){const [method,...args]=pending3d.shift();battle3d[method](...args)}}}catch(err){pending3d.length=0;console.warn("3D layer skipped; battle remains playable",err)}finally{battle3dLoading=false}}
 function animate3d(method,...args){if(battle3d){battle3d[method](...args);return}if(battle3dLoading)pending3d.push([method,...args])}
 function startBattle(){ensureBattle3D();const saved=getState();const validDeck=(Array.isArray(saved.deck)?saved.deck:[]).filter(id=>cardById(id));game=createBattle(validDeck);battleStarted=true;paidWin=false;selectedUnit=null;abilityTargeting=false;drawBattle()}
 function handleCardTap(side,index){
