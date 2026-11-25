@@ -9,7 +9,17 @@ const guardedTarget=(board,index)=>{
  const guardIndex=board.findIndex(u=>u.cardType==="Minion"&&u.protectsUid===target.uid&&u.hp>0);
  return guardIndex>=0?guardIndex:index;
 };
-const newUnit=(card,side,extra={})=>({...card,uid:side+"-"+(++instanceSequence),hp:card.health,maxHp:card.health,attacked:false,stunnedUntil:0,abilityReadyAt:0,untargetableUntil:0,markedForDeath:false,abilityUsed:false,side,summonedAtTurn:0,...extra});
+const newUnit=(card,side,extra={})=>({...card,uid:side+"-"+(++instanceSequence),hp:card.health,maxHp:card.health,attacked:false,stunnedUntil:0,abilityReadyAt:0,untargetableUntil:0,markedForDeath:false,abilityUsed:false,side,slot:0,summonedAtTurn:0,...extra});
+const firstOpenSlot=board=>[0,1,2,3,4,5].find(slot=>!board.some(u=>u.slot===slot));
+const closestOpenSlot=(board,anchorSlot)=>{
+ const occupied=new Set(board.map(u=>u.slot)),open=[0,1,2,3,4,5].filter(slot=>!occupied.has(slot));
+ const row=slot=>Math.floor(slot/3),col=slot=>slot%3;
+ return open.sort((a,b)=>{
+  const da=Math.abs(row(a)-row(anchorSlot))+Math.abs(col(a)-col(anchorSlot));
+  const db=Math.abs(row(b)-row(anchorSlot))+Math.abs(col(b)-col(anchorSlot));
+  return da-db||a-b;
+ })[0];
+};
 export function createBattle(ids){
  const valid=(Array.isArray(ids)?ids:[]).filter(id=>{const c=cardById(id);return c&&c.cardType!=="Minion"});
  const d=valid.length?valid:BOOSTER_CARDS.filter(c=>c.cost<=3).map(c=>c.id);
@@ -19,7 +29,7 @@ export function playCard(g,side,i){
  let p=g[side],c=cardById(p.hand[i]);
  if(g.over||!c||c.cardType==="Minion"||p.b<c.cost||p.board.length>=6)return false;
  p.b-=c.cost;p.hand.splice(i,1);
- p.board.push(newUnit(c,side));
+ p.board.push(newUnit(c,side,{slot:firstOpenSlot(p.board)}));
  if(c.id==="library-mage")p.hand.push(shuffle(BOOSTER_CARDS.map(x=>x.id))[0]);
  g.log=c.name+" joins the flock!";return true
 }
@@ -73,9 +83,10 @@ export function useAbility(g,side,index,targetIndex){
   g.log="Jeff's circular slash hits "+hit.join(", ")+" for 2 damage!";
  }else if(key==="summon-tomoe"){
   const minion=cardById("tomoe-minion");if(!minion||p.board.length>=6)return{ok:false};
-  const slotIndex=Math.min(index+1,p.board.length);
-  const summoned=newUnit(minion,side,{protectsUid:u.uid,summonedAtTurn:g.turn});
-  p.board.splice(slotIndex,0,summoned);g.nanamiSummonUsed=true;u.abilityUsed=true;
+  const slotIndex=closestOpenSlot(p.board,u.slot??index);
+  if(slotIndex===undefined)return{ok:false};
+  const summoned=newUnit(minion,side,{protectsUid:u.uid,summonedAtTurn:g.turn,slot:slotIndex});
+  p.board.push(summoned);g.nanamiSummonUsed=true;u.abilityUsed=true;
   animation={type:"summon-tomoe",ownerSide:side,slotIndex,summonedUid:summoned.uid};
   g.log="Tomoe descends from the sky and takes his place beside Nanami!";
   resolvedIndex=slotIndex;targetSide=side;
