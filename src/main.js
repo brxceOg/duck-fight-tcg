@@ -40,7 +40,7 @@ function handleCardTap(side,index){
  }
  if(side==="enemy"&&selectedUnit!==null&&game.player.board[selectedUnit]&&game.enemy.board[index]){
   const attacker=selectedUnit,ok=attack(game,"player",attacker,index);
-  if(ok)animate3d("attack","player",attacker,index);
+  if(ok)animate3d("attack","player",attacker,game.lastTargetIndex??index);
   selectedUnit=null;abilityTargeting=false;if(ok)drawBattle();
  }
 }
