@@ -1,16 +1,16 @@
 import{CARDS}from"../data/cards.js";
 const KEY="duckFightTCG.save.v1";
-const fresh=()=>({soap:500,collection:{"miku-duck":1},deck:["miku-duck"],wins:0,packs:0});
+const STARTER_IDS=CARDS.filter(c=>c.cardType!=="Minion").map(c=>c.id);
+const starterCollection=()=>Object.fromEntries(STARTER_IDS.map(id=>[id,1]));
+const fresh=()=>({soap:500,collection:starterCollection(),deck:[...STARTER_IDS],wins:0,packs:0});
 let s=load();
 function load(){
  try{
   const saved=JSON.parse(localStorage.getItem(KEY))||{};
   const base=fresh();
-  const state={...base,...saved,collection:{...base.collection,...(saved.collection||{})},deck:Array.isArray(saved.deck)?[...saved.deck]:[...base.deck]};
-  // Miku is a guaranteed starter unlock, including for saves created before her card was added.
-  if(!(state.collection["miku-duck"]>0))state.collection["miku-duck"]=1;
-  if(!state.deck.includes("miku-duck")&&state.deck.length<20)state.deck.push("miku-duck");
-  return state;
+  // Temporary testing setup: every playable card is owned and included in the starter deck.
+  // Preserve wallet/progression, but migrate existing saves to the same complete card pool.
+  return{...base,...saved,collection:{...starterCollection(),...(saved.collection||{})},deck:[...STARTER_IDS]};
  }catch{return fresh()}
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(s));window.dispatchEvent(new Event("playerstate"))}
@@ -18,7 +18,7 @@ export const getState=()=>structuredClone(s);
 export function spend(n){if(s.soap<n)return false;s.soap-=n;save();return true}
 export function addSoap(n){s.soap+=n;save()}
 export function addCards(a){a.forEach(c=>s.collection[c.id]=(s.collection[c.id]||0)+1);s.packs++;save()}
-export function addToDeck(id){if(CARDS.find(c=>c.id===id)?.cardType==="Minion")return false;let n=s.collection[id]||0;if(!n||s.deck.length>=20||s.deck.filter(x=>x===id).length>=n)return false;s.deck.push(id);save();return true}
+export function addToDeck(id){if(CARDS.find(c=>c.id===id)?.cardType==="Minion")return false;let n=s.collection[id]||0;if(!n||s.deck.length>=STARTER_IDS.length||s.deck.filter(x=>x===id).length>=n)return false;s.deck.push(id);save();return true}
 export function removeFromDeck(id){let i=s.deck.indexOf(id);if(i>=0){s.deck.splice(i,1);save()}}
 export function clearDeck(){s.deck=[];save()}
 export function win(){s.wins++;addSoap(60)}
