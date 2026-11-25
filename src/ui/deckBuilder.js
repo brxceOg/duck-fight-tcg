@@ -13,8 +13,8 @@ export function renderCollection(filter="all"){
   el.querySelector(".add").onclick=()=>{addToDeck(c.id);renderCollection(filter)};grid.append(el)
  });
  let d=s.deck.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);
- document.querySelector("#deck-count").textContent=d.length+" / 20 cards";
+ const deckLimit=collectible.length;
+ document.querySelector("#deck-count").textContent=d.length+" / "+deckLimit+" cards";
  document.querySelector("#deck-list").innerHTML=d.map(c=>'<button class="deck-chip" data-id="'+c.id+'">'+c.name+" ✕</button>").join("");
- document.querySelectorAll(".deck-chip").forEach(b=>b.onclick=()=>{removeFromDeck(b.dataset.id);renderCollection(filter)});
 }
 export function initDeckBuilder(){document.querySelector("#clear-deck").onclick=()=>{clearDeck();renderCollection(document.querySelector(".filter.active")?.dataset.filter||"all")};document.querySelector("#inspect-close").onclick=()=>document.querySelector("#inspect").classList.add("hidden");renderCollection()}
