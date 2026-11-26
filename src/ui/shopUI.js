@@ -47,7 +47,7 @@ export function initShop({ onState }) {
     ctx.restore();
     ctx.textAlign="center";ctx.fillStyle="#fff8e8";ctx.strokeStyle="#50315f";ctx.lineWidth=7;ctx.font="1000 45px Arial";ctx.strokeText("5 DUCKS INSIDE!",384,925);ctx.fillText("5 DUCKS INSIDE!",384,925);
     ctx.font="900 27px Arial";ctx.fillStyle="#39264e";ctx.fillText("COLLECT • BATTLE • MAKE A SPLASH",384,985);
-    return new THREE.CanvasTexture(canvas);
+    return canvas;
   }
   async function init3D() {
     if (!THREE) THREE = await import("three");
@@ -76,7 +76,7 @@ export function initShop({ onState }) {
       for(let i=0;i<pos.count;i++){const x=pos.getX(i),y=pos.getY(i);const bulge=.105*(1-(x/1.31)**2)*Math.sin(Math.PI*(y+1.86)/3.72);const wrinkle=.012*Math.sin(x*17+y*8)*Math.sin((y+1.86)*Math.PI/3.72);pos.setZ(i,zSign*(bulge+wrinkle));}
       geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,material);mesh.position.z=zSign*.105;return mesh;
     };
-    packGroup.add(pouchFace(1,new THREE.MeshBasicMaterial({map:makeArtwork(),side:THREE.DoubleSide})));
+    packGroup.add(pouchFace(1,new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(makeArtwork()),side:THREE.DoubleSide})));
     packGroup.add(pouchFace(-1,new THREE.MeshStandardMaterial({color:0x62427e,metalness:.76,roughness:.3,side:THREE.DoubleSide})));
     const sideMat=new THREE.MeshPhysicalMaterial({color:0xb879b9,metalness:.82,roughness:.24});
     for(const side of [-1,1]){
@@ -133,6 +133,31 @@ export function initShop({ onState }) {
     window.addEventListener("resize",resize);
     const animate=()=>{raf=requestAnimationFrame(animate);if(!dragging&&!opened)packGroup.rotation.y=-.13+Math.sin(performance.now()*.00065)*.055;renderer.render(scene,camera);};
     cancelAnimationFrame(raf);animate();
+  }
+  function createCSSFallback() {
+    tearDown();
+    viewport.innerHTML = "";
+    viewport.classList.add("pack-css-fallback");
+    const pack=document.createElement("div");pack.className="css-foil-pack";
+    const front=document.createElement("div");front.className="css-foil-front";
+    const art=makeArtwork();const artImg=document.createElement("img");artImg.src=art.toDataURL("image/png");artImg.alt="Wild Pond Duck Fight foil booster";front.append(artImg);
+    const shine=document.createElement("div");shine.className="css-foil-shine";front.append(shine);
+    const side=document.createElement("div");side.className="css-foil-side";pack.append(side,front);
+    const top=document.createElement("div");top.className="css-foil-crimp css-foil-top";
+    for(let i=0;i<25;i++){const rib=document.createElement("i");top.append(rib);}
+    const strip=document.createElement("div");strip.className="css-foil-strip";
+    const zig=document.createElement("div");zig.className="css-foil-zipper";strip.append(zig);
+    const tabEl=document.createElement("div");tabEl.className="css-foil-tab";tabEl.innerHTML="<span> PULL </span>";strip.append(tabEl);
+    const bottom=document.createElement("div");bottom.className="css-foil-crimp css-foil-bottom";
+    for(let i=0;i<25;i++){const rib=document.createElement("i");bottom.append(rib);}
+    pack.append(top,strip,bottom);viewport.append(pack);
+    let startX=0,progress=0,isPulling=false;
+    const down=e=>{if(opened)return;isPulling=true;startX=e.clientX;tabEl.setPointerCapture?.(e.pointerId);tabEl.classList.add("grabbing");e.preventDefault();hint.textContent="Pulling the foil tear strip…";};
+    const move=e=>{if(!isPulling)return;const dx=e.clientX-startX;progress=Math.max(0,Math.min(1,-dx/Math.max(120,viewport.clientWidth*.48)));strip.style.transform="translate3d("+(-progress*125)+"px,"+(-progress*55)+"px,80px) rotateZ("+(-progress*27)+"deg) rotateX("+(-progress*16)+"deg)";strip.style.clipPath="polygon(0 0,100% 0,100% 100%,0 100%)";front.style.clipPath="polygon(0 0,100% 0,100% "+(100-progress*18)+"%,0 "+(100-progress*18)+"%)";pack.style.transform="rotateY(-8deg) rotateX("+(-progress*3)+"deg)";hint.textContent="Peeling the crimped foil… "+Math.round(progress*100)+"%";if(progress>=1)finish();e.preventDefault();};
+    const finish=()=>{if(opened)return;isPulling=false;opened=true;pack.classList.add("css-pack-open");strip.classList.add("css-strip-torn");top.classList.add("css-crimp-torn");prompt.classList.add("hidden");hint.textContent="Foil torn! Your five ducks are ready…";window.setTimeout(show,650);};
+    const up=()=>{if(!isPulling)return;isPulling=false;tabEl.classList.remove("grabbing");if(progress>.48)finish();else{progress=0;strip.style.transform="";front.style.clipPath="";pack.style.transform="";hint.textContent="Grab the raised pull tab and drag it left to tear the foil.";}}
+    tabEl.addEventListener("pointerdown",down);window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up);window.addEventListener("pointercancel",up);
+    viewport._cssFallbackCleanup=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);window.removeEventListener("pointercancel",up);viewport.classList.remove("pack-css-fallback");};
   }
   function raycast(event) {
     const rect=renderer.domElement.getBoundingClientRect();
@@ -206,7 +231,7 @@ export function initShop({ onState }) {
     document.body.append(stage);stage.classList.remove("hidden");stage.classList.add("pack-overlay");document.body.classList.add("pack-opening-active");
     hint.textContent="Touch and hold the small pull tab at the top-right, then drag it all the way left.";
     prompt.classList.remove("hidden");hint.textContent="Preparing your booster…";onState();
-    init3D().then(()=>{bindCanvas();hint.textContent="Touch and hold the small pull tab at the top-right, then drag it all the way left.";}).catch(err=>{console.error("3D booster failed to initialize",err);hint.textContent="The 3D pack could not load. Check your connection and tap BUY PACK again.";stage.classList.remove("hidden");});
+    init3D().then(()=>{bindCanvas();hint.textContent="Touch and hold the small pull tab at the top-right, then drag it all the way left.";}).catch(err=>{console.error("Three.js booster unavailable; using local CSS 3D pack fallback",err);createCSSFallback();hint.textContent="Grab the raised pull tab and drag it left to tear open your foil booster.";});
   };
   next.onclick=show;
   finish.onclick=()=>{addCards(pulls);stage.classList.add("hidden");stage.classList.remove("pack-overlay");document.querySelector("#shop").append(stage);document.body.classList.remove("pack-opening-active");tearDown();onState();};
