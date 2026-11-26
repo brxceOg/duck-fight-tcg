@@ -143,7 +143,7 @@ export function initShop({ onState }) {
   }
   close.onclick=()=>{stage.classList.add("hidden");stage.classList.remove("pack-overlay");document.querySelector("#shop").append(stage);document.body.classList.remove("pack-opening-active");tearDown();};
   buy.onclick=()=>{
-    if(!window.duckSpend(100)){return;}
+    if(!window.duckSpend(100)){buy.textContent="NEED 100 SOAP";window.setTimeout(()=>buy.textContent="BUY PACK · 100 🫧",1400);return;}
     pulls=rollPack();index=0;opened=false;reveal.replaceChildren();
     next.classList.add("hidden");finish.classList.add("hidden");
     document.body.append(stage);stage.classList.remove("hidden");stage.classList.add("pack-overlay");document.body.classList.add("pack-opening-active");
