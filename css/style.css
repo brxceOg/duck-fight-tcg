@@ -358,3 +358,18 @@ body:has(#battle.active) #view{position:fixed;inset:0;width:100%;height:100dvh;o
 @keyframes rare-sheen{from{background-position:120% 0}to{background-position:-120% 0}}
 @media(max-width:480px){#shop .pack-opening-stage{height:300px}#shop .pack-3d{width:164px;height:236px}#shop .pack-3d .pack-seal{width:49px;height:49px}#shop .reveals{gap:8px}#shop .pull-card{width:calc(50% - 8px);max-width:145px}}
 @media(prefers-reduced-motion:reduce){#shop .pack-3d,#shop .pack-3d * ,#shop .pull-card{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+
+/* The sealed wrapper visibly releases a small stack of cards when torn. */
+#shop .pack-3d .pack-card-stack{position:absolute;z-index:0;left:13%;top:8%;width:74%;height:84%;transform:translateZ(-2px);opacity:.96;transition:transform .8s cubic-bezier(.16,.75,.2,1),opacity .45s}
+#shop .pack-3d .pack-card-stack i{position:absolute;inset:0;border:2px solid #fff;border-radius:8px;background:linear-gradient(145deg,#f7e8ff,#9d8bd1 45%,#3d3670);box-shadow:0 4px 10px #17102c88}
+#shop .pack-3d .pack-card-stack i:after{content:"🦆";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:38px;text-shadow:0 3px 8px #21133e}
+#shop .pack-3d .pack-card-stack i:nth-child(1){transform:translate(-5px,4px) rotate(-4deg)}
+#shop .pack-3d .pack-card-stack i:nth-child(2){transform:translate(3px,1px) rotate(2deg);background:linear-gradient(145deg,#fff0b0,#d96fae 55%,#7353b8)}
+#shop .pack-3d .pack-card-stack i:nth-child(3){transform:translate(0,-3px) rotate(-1deg);background:linear-gradient(145deg,#b9fff1,#62b9cb 55%,#5950a1)}
+#shop .pack-3d.opened .pack-card-stack{z-index:8;transform:translateY(-72px) translateZ(35px) rotateZ(-3deg);opacity:1}
+#shop .pack-3d.opened .pack-card-stack i{box-shadow:0 12px 18px #100b2688}
+#shop .pack-3d.opened .pack-card-stack i:nth-child(1){transform:translate(-13px,-4px) rotate(-10deg)}
+#shop .pack-3d.opened .pack-card-stack i:nth-child(2){transform:translate(9px,-10px) rotate(7deg)}
+#shop .pack-3d.opened .pack-card-stack i:nth-child(3){transform:translate(0,-19px) rotate(-1deg)}
+#shop .pack-3d .pack-front{z-index:2}
