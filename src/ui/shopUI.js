@@ -1,4 +1,4 @@
-import * as THREE from "three";
+let THREE;
 import { rollPack, rarityClass } from "../data/cards.js";
 import { addCards } from "../state/playerState.js";
 
@@ -39,7 +39,8 @@ export function initShop({ onState }) {
     ctx.font="900 27px Arial";ctx.fillText("WILD POND  ·  5 CARDS",256,674);
     return new THREE.CanvasTexture(canvas);
   }
-  function init3D() {
+  async function init3D() {
+    if (!THREE) THREE = await import("three");
     if (renderer) { renderer.dispose(); viewport.replaceChildren(); }
     scene = new THREE.Scene();
     scene.background = new THREE.Color("#211b3d");
@@ -148,7 +149,8 @@ export function initShop({ onState }) {
     next.classList.add("hidden");finish.classList.add("hidden");
     document.body.append(stage);stage.classList.remove("hidden");stage.classList.add("pack-overlay");document.body.classList.add("pack-opening-active");
     hint.textContent="Touch and hold the small pull tab at the top-right, then drag it all the way left.";
-    prompt.classList.remove("hidden");init3D();bindCanvas();onState();
+    prompt.classList.remove("hidden");hint.textContent="Preparing your booster…";onState();
+    init3D().then(()=>{bindCanvas();hint.textContent="Touch and hold the small pull tab at the top-right, then drag it all the way left.";}).catch(err=>{console.error("3D booster failed to initialize",err);hint.textContent="The 3D pack could not load. Check your connection and tap BUY PACK again.";stage.classList.remove("hidden");});
   };
   next.onclick=show;
   finish.onclick=()=>{addCards(pulls);stage.classList.add("hidden");stage.classList.remove("pack-overlay");document.querySelector("#shop").append(stage);document.body.classList.remove("pack-opening-active");tearDown();onState();};
