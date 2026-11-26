@@ -1,5 +1,5 @@
 import{getState,spend,win}from"./state/playerState.js";
-import{initShop}from"./ui/shopUI.js?v=packrestore1";
+import{initShop}from"./ui/shopUI.js?v=packoffline1";
 import{initDeckBuilder,renderCollection,renderDeckBuilder}from"./ui/deckBuilder.js?v=tcg-redesign1";
 import{createBattle,playCard,attack,endTurn,cardById,canUseAbility,useAbility}from"./game/battleEngine.js?v=unique-hand2";
 window.duckSpend=spend;
