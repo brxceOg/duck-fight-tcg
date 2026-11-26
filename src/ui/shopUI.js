@@ -236,13 +236,20 @@ export function initShop({ onState }) {
     if(!dragging)return;
     const dx=(e.clientX-dragStart)/Math.max(1,viewport.clientWidth)*5.2;
     const progress=Math.max(0,Math.min(1,-dx/2.15));
-    tearGroup.position.x=tearStart+dx;
-    tearGroup.position.y=1.69+progress*.52;
-    tearGroup.position.z=.27+progress*.34;
-    tearGroup.rotation.z=-progress*.58;
-    tearGroup.rotation.x=-progress*.22;
-    tab.rotation.z=-.16-progress*.32;tab.rotation.x=-.3-progress*.38;
-    packGroup.rotation.y=-.12-progress*.16;
+    // Keep the un-torn end anchored at the pull corner while the strip
+    // progressively stretches, twists and curls back from right to left.
+    tearGroup.position.x=tearStart+dx*.72;
+    tearGroup.position.y=1.69+progress*.44+Math.sin(progress*Math.PI)*.12;
+    tearGroup.position.z=.27+progress*.42;
+    tearGroup.rotation.z=-progress*.42;
+    tearGroup.rotation.x=-progress*.3;
+    tearGroup.rotation.y=-progress*.48;
+    tearGroup.scale.x=1-progress*.08;
+    tearGroup.scale.y=1+progress*.1;
+    tab.position.x=1.12-progress*.12;
+    tab.position.y=.12+progress*.08;
+    tab.rotation.z=-.16-progress*.55;tab.rotation.x=-.3-progress*.52;
+    packGroup.rotation.y=-.12-progress*.2;
     perforation.scale.x=Math.max(.02,1-progress);
     hint.textContent=progress>.92?"The last foil fibers are stretching…":"Peeling the crimped foil… "+Math.round(progress*100)+"%";
     if(progress>=1)completeTear();
