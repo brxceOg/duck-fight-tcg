@@ -4,7 +4,7 @@ import { addCards } from "../state/playerState.js";
 
 export function initShop({ onState }) {
   let pulls = [], index = 0, opened = false, dragging = false, dragStart = 0, tearStart = 0;
-  let renderer, scene, camera, packGroup, tearGroup, tab, seam, raf = 0;
+  let renderer, scene, camera, packGroup, tearGroup, tab, seam, perforation, raf = 0;
   const stage = document.querySelector("#pack-stage");
   const buy = document.querySelector("#buy-pack");
   const overlayMarkup = `
@@ -93,7 +93,7 @@ export function initShop({ onState }) {
     };
     seam=addCrimp(1.79);addCrimp(-1.79);
     // Perforation is a zig-zag tear path pressed into the foil, with tiny cut marks.
-    const perforation=new THREE.Group();perforation.position.set(0,1.64,.24);packGroup.add(perforation);
+    perforation=new THREE.Group();perforation.position.set(0,1.64,.24);packGroup.add(perforation);
     const tearPath=[];
     for(let i=0;i<=42;i++){const x=-1.27+i*(2.54/42),y=(i%2===0?-.025:.025);tearPath.push(new THREE.Vector3(x,y,0));}
     const pathGeo=new THREE.BufferGeometry().setFromPoints(tearPath);
