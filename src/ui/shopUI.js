@@ -141,16 +141,16 @@ export function initShop({ onState }) {
     renderer.domElement.addEventListener("pointerup",pointerUp);
     renderer.domElement.addEventListener("pointercancel",pointerUp);
   }
-  close.onclick=()=>{stage.classList.add("hidden");tearDown();};
+  close.onclick=()=>{stage.classList.add("hidden");stage.classList.remove("pack-overlay");document.querySelector("#shop").append(stage);document.body.classList.remove("pack-opening-active");tearDown();};
   buy.onclick=()=>{
     if(!window.duckSpend(100)){return;}
     pulls=rollPack();index=0;opened=false;reveal.replaceChildren();
     next.classList.add("hidden");finish.classList.add("hidden");
-    stage.classList.remove("hidden");stage.classList.add("pack-overlay");
+    document.body.append(stage);stage.classList.remove("hidden");stage.classList.add("pack-overlay");document.body.classList.add("pack-opening-active");
     hint.textContent="Touch and hold the small pull tab at the top-right, then drag it all the way left.";
     prompt.classList.remove("hidden");init3D();bindCanvas();onState();
   };
   next.onclick=show;
-  finish.onclick=()=>{addCards(pulls);stage.classList.add("hidden");stage.classList.remove("pack-overlay");tearDown();onState();};
+  finish.onclick=()=>{addCards(pulls);stage.classList.add("hidden");stage.classList.remove("pack-overlay");document.querySelector("#shop").append(stage);document.body.classList.remove("pack-opening-active");tearDown();onState();};
   // Reopening starts with a clean overlay and a newly built physical pack.
 }
