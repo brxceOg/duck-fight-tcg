@@ -152,9 +152,41 @@ export function initShop({ onState }) {
     for(let i=0;i<25;i++){const rib=document.createElement("i");bottom.append(rib);}
     pack.append(top,strip,bottom);viewport.append(pack);
     let startX=0,progress=0,isPulling=false;
-    const down=e=>{if(opened)return;isPulling=true;startX=e.clientX;tabEl.setPointerCapture?.(e.pointerId);tabEl.classList.add("grabbing");e.preventDefault();hint.textContent="Pulling the foil tear strip…";};
-    const move=e=>{if(!isPulling)return;const dx=e.clientX-startX;progress=Math.max(0,Math.min(1,-dx/Math.max(120,viewport.clientWidth*.48)));strip.style.transform="translate3d("+(-progress*125)+"px,"+(-progress*55)+"px,80px) rotateZ("+(-progress*27)+"deg) rotateX("+(-progress*16)+"deg)";strip.style.clipPath="polygon(0 0,100% 0,100% 100%,0 100%)";front.style.clipPath="polygon(0 0,100% 0,100% "+(100-progress*18)+"%,0 "+(100-progress*18)+"%)";pack.style.transform="rotateY(-8deg) rotateX("+(-progress*3)+"deg)";hint.textContent="Peeling the crimped foil… "+Math.round(progress*100)+"%";if(progress>=1)finish();e.preventDefault();};
-    const finish=()=>{if(opened)return;isPulling=false;opened=true;pack.classList.add("css-pack-open");strip.classList.add("css-strip-torn");top.classList.add("css-crimp-torn");prompt.classList.add("hidden");hint.textContent="Foil torn! Your five ducks are ready…";window.setTimeout(show,650);};
+    // The tear propagates from the pull corner across the heat-sealed seam.
+    // A deterministic uneven edge makes the split look like torn foil, not a ruler cut.
+    const ripPoints=Array.from({length:19},(_,i)=>({x:i*100/18,y: i===0||i===18?0:(i%2?3.5:0)}));
+    const ripPolygon=()=>"polygon(0 0,100% 0,"+ripPoints.slice().reverse().map(p=>p.x+"% "+(70+p.y)+"%").join(",")+")";
+    const down=e=>{if(opened)return;isPulling=true;startX=e.clientX;tabEl.setPointerCapture?.(e.pointerId);tabEl.classList.add("grabbing");e.preventDefault();hint.textContent="Pull the corner tab left—follow the crimped seam as it splits…";};
+    const move=e=>{
+      if(!isPulling)return;
+      const dx=e.clientX-startX;
+      progress=Math.max(0,Math.min(1,-dx/Math.max(120,viewport.clientWidth*.48)));
+      const exposed=Math.max(8,progress*100);
+      strip.style.left=(100-exposed)+"%";
+      strip.style.width=exposed+"%";
+      strip.style.transform="translate3d("+(-progress*34)+"px,"+(-progress*48)+"px,80px) rotateZ("+(-progress*20)+"deg) rotateX("+(-progress*25)+"deg)";
+      strip.style.transformOrigin="100% 0";
+      strip.style.clipPath=ripPolygon();
+      tabEl.style.transform="translate3d("+(-progress*10)+"px,"+(-progress*13)+"px,12px) rotate("+(7-progress*32)+"deg)";
+      zig.style.transform="skewX("+(-progress*18)+"deg) scaleY("+(1+progress*.4)+")";
+      top.style.clipPath="polygon(0 0,100% 0,100% 100%,"+(100-exposed)+"% 100%)";
+      pack.style.transform="rotateY("+(-8-progress*8)+"deg) rotateX("+(-progress*5)+"deg)";
+      hint.textContent="Tearing across the sealed foil… "+Math.round(progress*100)+"%";
+      if(progress>=1)finish();
+      e.preventDefault();
+    };
+    const finish=()=>{
+      if(opened)return;
+      isPulling=false;opened=true;
+      pack.classList.add("css-pack-open");
+      strip.classList.add("css-strip-torn");
+      strip.style.left="-8%";strip.style.width="112%";
+      strip.style.transform="translate3d(-42px,-75px,90px) rotateZ(-31deg) rotateX(-34deg)";
+      top.classList.add("css-crimp-torn");
+      prompt.classList.add("hidden");
+      hint.textContent="Foil torn! Your five ducks are ready…";
+      window.setTimeout(show,650);
+    };
     const up=()=>{if(!isPulling)return;isPulling=false;tabEl.classList.remove("grabbing");if(progress>.48)finish();else{progress=0;strip.style.transform="";front.style.clipPath="";pack.style.transform="";hint.textContent="Grab the raised pull tab and drag it left to tear the foil.";}}
     tabEl.addEventListener("pointerdown",down);window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up);window.addEventListener("pointercancel",up);
     viewport._cssFallbackCleanup=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);window.removeEventListener("pointercancel",up);viewport.classList.remove("pack-css-fallback");};
