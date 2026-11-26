@@ -35,3 +35,9 @@ body.pack-opening-active{overflow:hidden!important;overscroll-behavior:none}
  .pack-overlay .reveals{width:38%;max-height:65dvh}
 }
 @media(prefers-reduced-motion:reduce){.pack-grab-prompt{animation:none}}
+
+.pack-overlay .pull-card.rare{outline:2px solid #61c8ff;box-shadow:0 0 18px #61c8ff88}
+.pack-overlay .pull-card.ultrarare{outline:3px solid #ca7dff;box-shadow:0 0 25px #ca7dff99}
+.pack-overlay .pull-card.secretrare{outline:3px solid #ffd45f;box-shadow:0 0 30px #ffd45fbb}
+.pack-overlay .pull-card.ultrarare:after,.pack-overlay .pull-card.secretrare:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 20%,#fff9 46%,transparent 68%);background-size:220% 100%;animation:pack-card-sheen 1.8s ease-in-out infinite}
+@keyframes pack-card-sheen{from{background-position:120% 0}to{background-position:-120% 0}}
