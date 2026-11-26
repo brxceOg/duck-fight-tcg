@@ -114,11 +114,23 @@ export function initShop({ onState }) {
     tabMesh.rotation.x=-.22;tabMesh.position.z=.075;tab.add(tabMesh);
     const grip=new THREE.Mesh(new THREE.TorusGeometry(.105,.025,8,24),new THREE.MeshStandardMaterial({color:0x9d5a94,metalness:.6,roughness:.25}));grip.position.set(.04,.09,.17);tab.add(grip);
     // Cards are tucked behind the foil and only become visible as the top peels back.
-    const cardStack=new THREE.Group();cardStack.position.set(0,-.02,.28);packGroup.add(cardStack);
+    const cardStack=new THREE.Group();
+    // Cards sit inside the sealed pouch, behind the printed front foil.
+    cardStack.position.set(0,-.02,.015);packGroup.add(cardStack);
     for(let n=0;n<5;n++){const card=new THREE.Mesh(new THREE.BoxGeometry(2.28,3.23,.028),new THREE.MeshStandardMaterial({color:[0x91d9d5,0xe8c6ed,0xffd982,0x9d91dc,0xf5a5c6][n],roughness:.48}));card.position.set((n-2)*.025,(n-2)*.018,-.025-n*.012);card.rotation.z=(n-2)*.012;cardStack.add(card);}
     packGroup.rotation.set(.025,-.12,-.025);
-    const resize=()=>{const w=Math.max(1,viewport.clientWidth),h=Math.max(1,viewport.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};
-    resize();window.addEventListener("resize",resize);
+    const resize=()=>{
+      const rect=viewport.getBoundingClientRect(),w=Math.round(rect.width),h=Math.round(rect.height);
+      if(w<2||h<2)return;
+      renderer.setSize(w,h,false);camera.aspect=w/h;
+      const vfov=THREE.MathUtils.degToRad(camera.fov),hfov=2*Math.atan(Math.tan(vfov/2)*camera.aspect);
+      camera.position.set(0,.05,Math.max(3.72/(2*Math.tan(vfov/2)),2.72/(2*Math.tan(hfov/2)))*1.2);
+      camera.updateProjectionMatrix();
+    };
+    resize();
+    resizeObserver?.disconnect();
+    if(typeof ResizeObserver!=="undefined"){resizeObserver=new ResizeObserver(resize);resizeObserver.observe(viewport);}
+    window.addEventListener("resize",resize);
     const animate=()=>{raf=requestAnimationFrame(animate);if(!dragging&&!opened)packGroup.rotation.y=-.13+Math.sin(performance.now()*.00065)*.055;renderer.render(scene,camera);};
     cancelAnimationFrame(raf);animate();
   }
