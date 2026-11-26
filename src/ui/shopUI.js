@@ -187,7 +187,7 @@ export function initShop({ onState }) {
       hint.textContent="Foil torn! Your five ducks are ready…";
       window.setTimeout(show,650);
     };
-    const up=()=>{if(!isPulling)return;isPulling=false;tabEl.classList.remove("grabbing");if(progress>.48)finish();else{progress=0;strip.style.transform="";front.style.clipPath="";pack.style.transform="";hint.textContent="Grab the raised pull tab and drag it left to tear the foil.";}}
+    const up=()=>{if(!isPulling)return;isPulling=false;tabEl.classList.remove("grabbing");if(progress>.48)finish();else{progress=0;strip.style.left="0";strip.style.width="100%";strip.style.transform="";strip.style.clipPath="";tabEl.style.transform="";zig.style.transform="";top.style.clipPath="";pack.style.transform="";hint.textContent="Grab the raised pull tab and drag it left to tear the foil.";}}
     tabEl.addEventListener("pointerdown",down);window.addEventListener("pointermove",move,{passive:false});window.addEventListener("pointerup",up);window.addEventListener("pointercancel",up);
     viewport._cssFallbackCleanup=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);window.removeEventListener("pointercancel",up);viewport.classList.remove("pack-css-fallback");};
   }
@@ -255,7 +255,7 @@ export function initShop({ onState }) {
     if(progress>=1)completeTear();
     e.preventDefault();
   }
-  function pointerUp(){if(!dragging)return;dragging=false;if(tearGroup.position.x<-.55)completeTear();else{tearGroup.position.x=0;tearGroup.position.y=1.69;tearGroup.position.z=.27;tearGroup.rotation.set(0,0,0);tab.rotation.set(-.22,0,0);perforation.scale.x=1;hint.textContent="Grab the raised corner tab and pull left along the jagged tear seam.";}}
+  function pointerUp(){if(!dragging)return;dragging=false;if(tearGroup.position.x<-.55)completeTear();else{tearGroup.position.x=0;tearGroup.position.y=1.69;tearGroup.position.z=.27;tearGroup.rotation.set(0,0,0);tearGroup.scale.set(1,1,1);tab.position.set(1.12,.12,.12);tab.rotation.set(-.22,0,0);perforation.scale.x=1;hint.textContent="Grab the raised corner tab and pull left along the jagged tear seam.";}}
   function bindCanvas() {
     renderer.domElement.addEventListener("pointerdown",pointerDown);
     renderer.domElement.addEventListener("pointermove",pointerMove);
